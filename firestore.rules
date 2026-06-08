@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: is the request from a logged-in user?
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Helper: fetch the caller's user profile
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isRole(role) {
+      return isAuth() && userRole() == role;
+    }
+
+    // ── users ──────────────────────────────────────────────
+    match /users/{uid} {
+      // Anyone authenticated can read their own profile
+      allow read: if isAuth() && request.auth.uid == uid;
+      // Users can create their own document on first sign-in
+      allow create: if isAuth() && request.auth.uid == uid;
+      // Users can update non-role fields; only admins change role
+      // (For now, allow self-updates — admins edit via Firebase Console)
+      allow update: if isAuth() && request.auth.uid == uid;
+    }
+
+    // ── projects ───────────────────────────────────────────
+    match /projects/{projectId} {
+      // Anyone authenticated can read projects (for Research Hub)
+      allow read: if isAuth();
+
+      // Only lead researchers can create projects
+      allow create: if isRole('lead_researcher');
+
+      // Lead of this project can update it
+      allow update: if isAuth() &&
+        request.auth.uid == resource.data.leadResearcherId;
+
+      allow delete: if isAuth() &&
+        request.auth.uid == resource.data.leadResearcherId;
+
+      // ── sub-collections ──
+      match /tasks/{taskId} {
+        allow read: if isAuth();
+        allow create: if isAuth() &&
+          request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.leadResearcherId;
+        allow update: if isAuth() &&
+          (request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.leadResearcherId
+           || get(/databases/$(database)/documents/projects/$(projectId)).data.memberIds.hasAny([request.auth.uid]));
+        allow delete: if isAuth() &&
+          request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.leadResearcherId;
+      }
+
+      match /announcements/{annId} {
+        allow read: if isAuth();
+        allow create, update, delete: if isAuth() &&
+          request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.leadResearcherId;
+      }
+
+      match /readings/{readingId} {
+        allow read: if isAuth();
+        allow create, update, delete: if isAuth() &&
+          request.auth.uid == get(/databases/$(database)/documents/projects/$(projectId)).data.leadResearcherId;
+      }
+    }
+
+    // ── chapters ───────────────────────────────────────────
+    match /chapters/{leaderId} {
+      allow read: if isAuth();
+      allow write: if isAuth() && request.auth.uid == leaderId;
+    }
+
+    // ── independent progress ───────────────────────────────
+    match /independentProgress/{uid} {
+      allow read, write: if isAuth() && request.auth.uid == uid;
+    }
+
+    // ── applications ──────────────────────────────────────
+    match /applications/{appId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      // Only admins update applications (status changes) — do via Firebase Console
+    }
+
+    // ── resources (read-only for users) ───────────────────
+    match /resources/{resourceId} {
+      allow read: if isAuth();
+    }
+  }
+}

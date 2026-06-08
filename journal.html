@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthica Journal — Open-Access STEM Journal for Student Researchers</title>
+    <meta name="description"
+        content="Synthica Journal is an independent, open-access, peer-reviewed STEM journal for student researchers. Professional editorial standards, zero fees, immediate CC BY 4.0 publication.">
+    <meta name="keywords"
+        content="Synthica Journal, student research journal, open access STEM journal, peer-reviewed student research, high school science journal, research publication">
+    <meta name="author" content="Synthica Journal">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://www.synthica.org/journal">
+
+    <meta property="og:title" content="Synthica Journal — Open-Access STEM Journal for Student Researchers">
+    <meta property="og:description"
+        content="An independent, open-access, peer-reviewed STEM journal for student researchers.">
+    <meta property="og:image" content="https://www.synthica.org/src/logo/Synthica Preview Image.png">
+    <meta property="og:url" content="https://www.synthica.org/journal">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Synthica">
+    <meta property="og:locale" content="en_US">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Synthica Journal — Open-Access STEM Journal for Student Researchers">
+    <meta name="twitter:description" content="Open-access, peer-reviewed STEM journal for student researchers.">
+    <meta name="twitter:image" content="https://www.synthica.org/src/logo/Synthica Preview Image.png">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Periodical",
+        "name": "Synthica Journal",
+        "url": "https://www.synthica.org/journal",
+        "description": "Independent open-access, peer-reviewed STEM journal for student researchers.",
+        "publisher": { "@type": "EducationalOrganization", "name": "Synthica", "url": "https://www.synthica.org" },
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "isAccessibleForFree": true
+    }
+    </script>
+
+    <link rel="icon" type="image/png" href="src/logo/Synthica Favicon.png">
+    <link rel="sitemap" type="application/xml" href="sitemap.xml">
+    <link href="https://fonts.cdnfonts.com/css/garet" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Journal-only tweaks layered on top of the main site styles */
+        .journal-section {
+            padding: 6rem 2rem;
+        }
+
+        .journal-section-alt {
+            background: #f5f8fc;
+        }
+
+        .journal-section .section-badge,
+        .journal-section .section-title,
+        .journal-section .section-subtitle {
+            text-align: center;
+        }
+
+        .journal-section .section-title {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .journal-section .section-badge {
+            display: inline-block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .journal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .journal-lede {
+            font-size: 1.125rem;
+            color: #4B5563;
+            line-height: 1.7;
+            max-width: 760px;
+            margin: 0 auto 3rem;
+        }
+
+        .journal-scope-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+            max-width: 980px;
+            margin: 2.5rem auto 0;
+            padding: 0;
+            list-style: none;
+            text-align: left;
+        }
+
+        .journal-scope-list li {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(120, 180, 251, 0.25);
+            border-radius: 12px;
+            padding: 0.85rem 1.1rem;
+            font-size: 0.95rem;
+            color: #1F2937;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .journal-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.25rem 2.5rem;
+            justify-content: center;
+            margin-top: 2.5rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .journal-meta li {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 0.95rem;
+        }
+
+        .journal-meta strong {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 0.25rem;
+        }
+
+        .journal-meta a {
+            color: #FFD700;
+            text-decoration: none;
+        }
+
+        .journal-meta a:hover {
+            text-decoration: underline;
+        }
+
+        .journal-submit-card {
+            max-width: 760px;
+            margin: 2.5rem auto 0;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(120, 180, 251, 0.15);
+            border: 1px solid rgba(120, 180, 251, 0.2);
+            text-align: left;
+        }
+
+        .journal-submit-card h3 {
+            font-size: 1.25rem;
+            color: #1F2937;
+            margin: 0 0 0.5rem;
+        }
+
+        .journal-submit-card p {
+            color: #4B5563;
+            line-height: 1.7;
+            margin: 0 0 1rem;
+        }
+
+        .journal-submit-card ul {
+            margin: 0 0 1.5rem;
+            padding-left: 1.25rem;
+            color: #4B5563;
+            line-height: 1.8;
+        }
+
+        .journal-submit-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .journal-btn-primary,
+        .journal-btn-secondary {
+            display: inline-block;
+            padding: 0.85rem 1.5rem;
+            border-radius: 999px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .journal-btn-primary {
+            background: #2589ed;
+            color: white;
+            box-shadow: 0 6px 18px rgba(37, 137, 237, 0.35);
+        }
+
+        .journal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(37, 137, 237, 0.4);
+        }
+
+        .journal-btn-secondary {
+            background: rgba(37, 137, 237, 0.08);
+            color: #2589ed;
+            border: 1px solid rgba(37, 137, 237, 0.25);
+        }
+
+        .journal-btn-secondary:hover {
+            background: rgba(37, 137, 237, 0.14);
+        }
+
+        @media (max-width: 768px) {
+            .journal-section {
+                padding: 4rem 1.25rem;
+            }
+            .journal-submit-card {
+                padding: 1.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Hero -->
+    <section class="page-hero">
+        <nav class="navbar page-navbar">
+            <a href="index.html" class="logo">
+                <img src="src/logo/Synthica Logo.png" alt="Synthica Logo" class="logo-icon">
+                <span class="logo-text">Synthica</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="nav-item-dropdown">
+                    <a href="about.html" class="nav-link-dropdown">About</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="about.html#mission">Our Mission</a></li>
+                        <li><a href="about.html#team">Our Team</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item-dropdown">
+                    <a href="journal.html" class="nav-link-dropdown">Journal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="journal.html#about">About</a></li>
+                        <li><a href="journal.html#aims">Aims &amp; Scope</a></li>
+                        <li><a href="journal.html#for-authors">For Authors</a></li>
+                        <li><a href="journal.html#policies">Policies</a></li>
+                        <li><a href="journal.html#submit">Submit</a></li>
+                        <li><a href="editorial-board.html">Editorial Board</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item-dropdown">
+                    <a href="research-group.html" class="nav-link-dropdown">Programs</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="https://globalresearchchallenge.org" target="_blank" rel="noopener noreferrer">Competition</a></li>
+                        <li><a href="sister-program.html">SISTER Program</a></li>
+                        <li><a href="research-group.html">Research Group</a></li>
+                        <li><a href="free-course.html">Free Course</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item-dropdown">
+                    <a href="work-with-us.html" class="nav-link-dropdown">Work with us</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="work-with-us.html#partnerships">Partnerships</a></li>
+                        <li><a href="work-with-us.html#sponsors">Sponsorships</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <a href="https://discord.gg/8wPzZkGy5Z" target="_blank" class="join-btn">Join Us Now</a>
+        </nav>
+
+        <div class="page-hero-content">
+            <h1 class="page-hero-title">Synthica <span class="highlight-text">Journal</span></h1>
+            <p class="page-hero-subtitle">An independent, open-access, peer-reviewed STEM journal for student researchers. Original research, reviews, and methods papers — professional editorial standards, zero fees.</p>
+            <ul class="journal-meta">
+                <li><strong>License</strong><a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></li>
+                <li><strong>Peer Review</strong>Double-blind</li>
+                <li><strong>Indexing</strong>Google Scholar</li>
+                <li><strong>ISSN</strong>Pending</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section class="journal-section" id="about">
+        <div class="journal-container">
+            <div class="section-badge">About the Journal</div>
+            <h2 class="section-title">A rigorous, open record for <span class="yellow-text">student research</span></h2>
+            <p class="journal-lede">Synthica Journal exists so that high-school and early-career student research gets the same rigor, discoverability, and credibility as published professional science. We follow IEEE publication ethics, COPE guidelines, and Society for Science safeguards — published immediately under CC BY 4.0 with a registered DOI and Google Scholar metadata.</p>
+
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-number">01</div>
+                    <h4 class="value-title">Double-blind peer review</h4>
+                    <p class="value-description">Two independent reviewers, written editorial rationale, and a four-week target turnaround on every submission.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">02</div>
+                    <h4 class="value-title">IEEE-aligned ethics</h4>
+                    <p class="value-description">Publication ethics, conflict-of-interest disclosure, authorship standards, and an AI-use policy modeled on IEEE.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">03</div>
+                    <h4 class="value-title">Fully open access</h4>
+                    <p class="value-description">Immediate CC BY 4.0 publication. No charges to authors. No charges to readers. Authors retain copyright.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">04</div>
+                    <h4 class="value-title">Scholar-ready pages</h4>
+                    <p class="value-description">Citation metadata, stable DOI URLs, crawlable HTML abstracts, and downloadable PDFs on every article page.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Aims & Scope -->
+    <section class="journal-section journal-section-alt" id="aims">
+        <div class="journal-container">
+            <div class="section-badge">Aims &amp; Scope</div>
+            <h2 class="section-title">STEM fields we <span class="highlight-blue">publish</span></h2>
+            <p class="journal-lede">Synthica accepts original research across the full STEM spectrum. Interdisciplinary and cross-disciplinary work is actively encouraged.</p>
+
+            <ul class="journal-scope-list">
+                <li>Astronomy &amp; Astrophysics</li>
+                <li>Biology — Cellular &amp; Molecular</li>
+                <li>Biology — Ecology &amp; Environmental</li>
+                <li>Biology — Genetics &amp; Genomics</li>
+                <li>Biomedical Engineering</li>
+                <li>Chemistry — Organic</li>
+                <li>Chemistry — Inorganic &amp; Physical</li>
+                <li>Computer Science — Algorithms</li>
+                <li>Computer Science — ML &amp; AI</li>
+                <li>Computer Science — Systems</li>
+                <li>Earth &amp; Atmospheric Sciences</li>
+                <li>Electrical Engineering</li>
+                <li>Environmental Science</li>
+                <li>Mathematics — Applied &amp; Pure</li>
+                <li>Mechanical Engineering</li>
+                <li>Neuroscience &amp; Cognitive Science</li>
+                <li>Physics — Classical &amp; Quantum</li>
+                <li>Public Health &amp; Epidemiology</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- For Authors -->
+    <section class="journal-section" id="for-authors">
+        <div class="journal-container">
+            <div class="section-badge">For Authors</div>
+            <h2 class="section-title">From submission to <span class="yellow-text">publication</span></h2>
+            <p class="journal-lede">We accept original research (IMRaD), review articles, methods papers, perspectives, and commentaries. Authors must meet ethics, formatting, and disclosure requirements before peer review begins.</p>
+
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-number">01</div>
+                    <h4 class="value-title">Pre-submission check</h4>
+                    <p class="value-description">Verify originality, ethics compliance, formatting, and authorship criteria before submitting your manuscript.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">02</div>
+                    <h4 class="value-title">Desk review</h4>
+                    <p class="value-description">The Editorial Chair evaluates scope, format, and completeness within five business days.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">03</div>
+                    <h4 class="value-title">Double-blind peer review</h4>
+                    <p class="value-description">Two independent reviewers assess methodology, clarity, and contribution. Target turnaround: four weeks.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">04</div>
+                    <h4 class="value-title">Publication</h4>
+                    <p class="value-description">Accepted articles publish as HTML and PDF with a DOI, CC BY 4.0 license, and full citation metadata.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Policies -->
+    <section class="journal-section journal-section-alt" id="policies">
+        <div class="journal-container">
+            <div class="section-badge">Editorial Policies</div>
+            <h2 class="section-title">Policies built for <span class="highlight-blue">trust</span></h2>
+            <p class="journal-lede">Our editorial policies follow IEEE publication ethics, COPE guidelines, and Society for Science safeguards. Authorship, AI disclosure, and human-subjects research are treated with the same seriousness as professional venues.</p>
+
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-number">01</div>
+                    <h4 class="value-title">Peer Review</h4>
+                    <p class="value-description">Double-blind, minimum two reviewers, conflict recusal, written rationale on every editorial decision.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">02</div>
+                    <h4 class="value-title">Open Access</h4>
+                    <p class="value-description">Immediate CC BY 4.0 publication. No article-processing charges. Authors retain copyright.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">03</div>
+                    <h4 class="value-title">Authorship &amp; CRediT</h4>
+                    <p class="value-description">All authors meet ICMJE criteria. CRediT taxonomy documents individual contributions on every article.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">04</div>
+                    <h4 class="value-title">AI Disclosure</h4>
+                    <p class="value-description">AI tools cannot be authors. Substantive AI-generated content must be disclosed in line with IEEE policy.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">05</div>
+                    <h4 class="value-title">Publication Ethics</h4>
+                    <p class="value-description">No plagiarism, fabrication, falsification, or simultaneous submission. Ethics approval required for human-subjects work.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-number">06</div>
+                    <h4 class="value-title">Corrections &amp; Retractions</h4>
+                    <p class="value-description">Factual errors corrected via published Erratum. Research fraud results in retraction with a permanent visible notice.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Submit -->
+    <section class="journal-section" id="submit">
+        <div class="journal-container">
+            <div class="section-badge">Submit</div>
+            <h2 class="section-title">Submit your <span class="yellow-text">manuscript</span></h2>
+            <p class="journal-lede">A credible, citable, open-access venue for student STEM research — at zero cost to authors or readers. Submissions are reviewed in the order received.</p>
+
+            <div class="journal-submit-card">
+                <h3>Before you submit</h3>
+                <ul>
+                    <li>150–250 word structured abstract (Background, Methods, Results, Conclusion)</li>
+                    <li>3–8 semicolon-separated keywords</li>
+                    <li>IEEE-style numbered references</li>
+                    <li>Originality and authorship declaration signed by the corresponding author</li>
+                    <li>Ethics documentation for any human-subjects research</li>
+                    <li>AI use disclosure where tools materially affected the manuscript</li>
+                </ul>
+                <p>Complete the submission form below. Expect a desk-review response within five business days. You can also <a href="mailto:quang@synthica.org" style="color:#2589ed;">email the editorial team</a> directly for questions.</p>
+                <div class="journal-submit-actions" style="margin-bottom:0;">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdIdBbXG0TQcifO-Dafb1b7_c9qo6iWbLj-ZfOQmHGIPs59VA/viewform?fbzx=-1610712300921195434" target="_blank" rel="noopener noreferrer" class="journal-btn-primary">Open Form in New Tab</a>
+                    <a href="https://discord.gg/8wPzZkGy5Z" target="_blank" rel="noopener noreferrer" class="journal-btn-secondary">Ask in the Synthica Community</a>
+                </div>
+            </div>
+
+            <!-- Embedded Google Form -->
+            <div style="margin-top:2.5rem;max-width:760px;margin-left:auto;margin-right:auto;">
+                <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#2589ed;margin-bottom:1rem;text-align:center;font-family:'Garet',sans-serif;">Submit directly below &mdash; no account required</p>
+                <div style="border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06);background:#f8fafc;">
+                    <iframe
+                        src="https://docs.google.com/forms/d/e/1FAIpQLSdIdBbXG0TQcifO-Dafb1b7_c9qo6iWbLj-ZfOQmHGIPs59VA/viewform?embedded=true"
+                        width="100%"
+                        height="800"
+                        frameborder="0"
+                        marginheight="0"
+                        marginwidth="0"
+                        title="Synthica Journal Manuscript Submission Form"
+                        style="display:block;border:none;">
+                        Loading form&hellip;
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-cta-combined">
+        <div class="footer-container">
+            <div class="footer-cta-content">
+                <h2 class="footer-cta-title">Ready to publish with <span class="yellow-text">Synthica</span>?</h2>
+                <p class="footer-cta-subtitle">Free to publish, free to read, and globally discoverable from day one.</p>
+                <a href="#submit" class="footer-cta-button">Submit Your Research</a>
+            </div>
+
+            <div class="footer-bottom-section">
+                <div class="footer-bottom-left">
+                    <div class="footer-logo">
+                        <img src="src/logo/Synthica Logo.png" alt="Synthica" class="footer-logo-img">
+                        <span class="footer-logo-text">Synthica</span>
+                    </div>
+                    <p class="footer-copyright">&copy; 2026 Synthica Journal · Content licensed under
+                        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">CC BY 4.0</a>.
+                        ISSN pending.
+                    </p>
+                </div>
+                <div class="footer-bottom-right">
+                    <div class="footer-social">
+                        <a href="https://www.linkedin.com/company/synthica-org/" class="social-icon"
+                            aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                            </svg>
+                        </a>
+                        <a href="https://www.instagram.com/synthica_org/" class="social-icon" aria-label="Instagram"
+                            target="_blank" rel="noopener noreferrer">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dropdown hover behavior (matches main site)
+        const dropdownItems = document.querySelectorAll('.nav-item-dropdown');
+        let hoverTimeout;
+        dropdownItems.forEach(item => {
+            const dropdown = item.querySelector('.dropdown-menu');
+
+            item.addEventListener('mouseenter', () => {
+                clearTimeout(hoverTimeout);
+                item.classList.add('active');
+            });
+
+            item.addEventListener('mouseleave', () => {
+                hoverTimeout = setTimeout(() => {
+                    item.classList.remove('active');
+                }, 150);
+            });
+
+            if (dropdown) {
+                dropdown.addEventListener('mouseenter', () => {
+                    clearTimeout(hoverTimeout);
+                    item.classList.add('active');
+                });
+
+                dropdown.addEventListener('mouseleave', () => {
+                    hoverTimeout = setTimeout(() => {
+                        item.classList.remove('active');
+                    }, 150);
+                });
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-item-dropdown')) {
+                dropdownItems.forEach(item => item.classList.remove('active'));
+            }
+        });
+
+        // Smooth scroll for in-page anchors
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href');
+                if (targetId === '#' || targetId.length < 2) return;
+                const target = document.querySelector(targetId);
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

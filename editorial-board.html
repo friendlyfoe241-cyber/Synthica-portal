@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editorial Board — Synthica Journal</title>
+    <meta name="description" content="Meet the Synthica editorial board — a global team of researchers, scientists, and scholars committed to rigorous, accessible science.">
+    <meta name="author" content="Synthica">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.synthica.org/editorial-board">
+    <meta property="og:title" content="Editorial Board — Synthica Journal">
+    <meta property="og:description" content="Meet the Synthica editorial board — a global team committed to rigorous, accessible science.">
+    <meta property="og:url" content="https://www.synthica.org/editorial-board">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/png" href="src/logo/Synthica Favicon.png">
+    <link href="https://fonts.cdnfonts.com/css/garet" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Leader cards ── */
+        .eb-leaders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .eb-leader-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 20px;
+            padding: 2rem 1.75rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+
+        .eb-leader-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.12); }
+
+        .eb-leader-photo-wrap {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+            border: 3px solid rgba(120,180,251,0.3);
+            box-shadow: 0 0 0 5px rgba(120,180,251,0.1);
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #2589ed, #78b4fb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eb-leader-photo { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+
+        .eb-leader-initials {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.05em;
+        }
+
+        .eb-role-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.25rem 0.85rem;
+            border-radius: 999px;
+            margin-bottom: 0.5rem;
+        }
+
+        .eb-role-badge.director { background: rgba(37,137,237,0.12); color: #1a6bb5; }
+        .eb-role-badge.chief { background: rgba(120,180,251,0.15); color: #2589ed; }
+
+        .eb-published-badge {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #ffd700, #ffb800);
+            color: #7a5a00;
+            padding: 0.2rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 8px rgba(255,215,0,0.35);
+        }
+
+        .eb-leader-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+
+        .eb-orcid-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.75rem;
+            color: #6B7280;
+            text-decoration: none;
+            margin-bottom: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .eb-orcid-link:hover { color: #2589ed; }
+
+        .eb-affils {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .eb-affil-tag {
+            font-size: 0.68rem;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+        }
+
+        .eb-bio {
+            font-size: 0.875rem;
+            color: #6B7280;
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        /* ── Editor cards ── */
+        .eb-editors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.25rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .eb-editor-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 16px;
+            padding: 1.5rem 1.25rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .eb-editor-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+        .eb-editor-avatar-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 0.9rem;
+            border: 2px solid rgba(120,180,251,0.25);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eb-editor-photo { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+
+        .eb-editor-initials {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .eb-editor-category { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #78b4fb; margin-bottom: 0.25rem; }
+        .eb-editor-name { font-size: 0.95rem; font-weight: 700; color: #1F2937; margin-bottom: 0.25rem; line-height: 1.3; }
+        .eb-editor-affils { display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 0.6rem; width: 100%; }
+        .eb-editor-affil { font-size: 0.68rem; color: #6B7280; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.15rem 0.5rem; border-radius: 6px; }
+        .eb-editor-bio { font-size: 0.78rem; color: #6B7280; line-height: 1.65; text-align: left; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .eb-section { padding: 5rem 2rem; }
+        .eb-section-alt { background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%); }
+        .eb-container { max-width: 1200px; margin: 0 auto; text-align: center; }
+
+        @media (max-width: 768px) {
+            .eb-leaders-grid { grid-template-columns: 1fr; }
+            .eb-editors-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+            .eb-section { padding: 3.5rem 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <section class="page-hero">
+        <nav class="navbar page-navbar">
+            <a href="index.html" class="logo">
+                <img src="src/logo/Synthica Logo.png" alt="Synthica Logo" class="logo-icon">
+                <span class="logo-text">Synthica</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="nav-item-dropdown">
+                    <a href="about.html" class="nav-link-dropdown">About</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="about.html#mission">Our Mission</a></li>
+                        <li><a href="about.html#team">Our Team</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item-dropdown">
+                    <a href="journal.html" class="nav-link-dropdown">Journal</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="journal.html#about">About</a></li>
+                        <li><a href="journal.html#aims">Aims &amp; Scope</a></li>
+                        <li><a href="journal.html#for-authors">For Authors</a></li>
+                        <li><a href="journal.html#policies">Policies</a></li>
+                        <li><a href="journal.html#submit">Submit</a></li>
+                        <li><a href="editorial-board.html">Editorial Board</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item-dropdown">
+                    <a href="research-group.html" class="nav-link-dropdown">Programs</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="https://globalresearchchallenge.org" target="_blank" rel="noopener noreferrer">Competition</a></li>
+                        <li><a href="sister-program.html">SISTER Program</a></li>
+                        <li><a href="research-group.html">Research Group</a></li>
+                        <li><a href="free-course.html">Free Course</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item-dropdown">
+                    <a href="work-with-us.html" class="nav-link-dropdown">Work with us</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="work-with-us.html#partnerships">Partnerships</a></li>
+                        <li><a href="work-with-us.html#sponsors">Sponsorships</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <a href="https://discord.gg/8wPzZkGy5Z" target="_blank" class="join-btn">Join Us Now</a>
+        </nav>
+        <div class="page-hero-content">
+            <h1 class="page-hero-title">Editorial <span class="highlight-text">Board</span></h1>
+            <p class="page-hero-subtitle">A global team of researchers, scientists, and scholars committed to rigorous, accessible science.</p>
+        </div>
+    </section>
+
+    <!-- Leadership -->
+    <section class="eb-section" id="leadership">
+        <div class="eb-container">
+            <div class="section-badge">Leadership</div>
+            <h2 class="section-title">Founding <span class="yellow-text">Team</span></h2>
+            <p class="section-subtitle">Synthica is led by a founding team dedicated to removing barriers in academic publishing and research mentorship worldwide.</p>
+            <div class="eb-leaders-grid" id="leaders-grid"></div>
+        </div>
+    </section>
+
+    <!-- Senior Editors -->
+    <section class="eb-section eb-section-alt" id="senior-editors">
+        <div class="eb-container">
+            <div class="section-badge">Senior Editors</div>
+            <h2 class="section-title">Senior Editorial <span class="yellow-text">Board</span></h2>
+            <div class="eb-editors-grid" id="senior-grid"></div>
+        </div>
+    </section>
+
+    <!-- Associate Editors -->
+    <section class="eb-section" id="associate-editors">
+        <div class="eb-container">
+            <div class="section-badge">Associate Editors</div>
+            <h2 class="section-title">Associate Editorial <span class="highlight-blue">Board</span></h2>
+            <div class="eb-editors-grid" id="associate-grid"></div>
+        </div>
+    </section>
+
+    <!-- Review Editors -->
+    <section class="eb-section eb-section-alt" id="review-editors">
+        <div class="eb-container">
+            <div class="section-badge">Review Editors</div>
+            <h2 class="section-title">Review Editorial <span class="yellow-text">Board</span></h2>
+            <div class="eb-editors-grid" id="review-grid"></div>
+        </div>
+    </section>
+
+    <!-- Journal CTA -->
+    <section class="eb-section" style="background:linear-gradient(135deg,#1a6bb5 0%,#2589ed 60%,#4999e8 100%);">
+        <div class="eb-container">
+            <p style="font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.75);margin-bottom:0.75rem;">Synthica Journal &mdash; Volume 1, Edition 1</p>
+            <h2 style="font-size:clamp(1.75rem,4vw,2.6rem);font-weight:700;color:#fff;letter-spacing:-0.02em;margin-bottom:0.85rem;line-height:1.2;">Ready to submit your research?</h2>
+            <p style="font-size:1rem;color:rgba(255,255,255,0.85);max-width:520px;margin:0 auto 2rem;line-height:1.65;">Synthica Journal is free to publish and among the most selective venues for emerging scholars worldwide.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="journal.html" style="background:#fff;color:#1a6bb5;font-size:0.9rem;font-weight:700;padding:0.8rem 1.75rem;border-radius:10px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,0.15);">Read Author Guidelines</a>
+                <a href="journal.html#submit" style="background:rgba(255,255,255,0.18);color:#fff;font-size:0.9rem;font-weight:600;padding:0.8rem 1.75rem;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.4);">Submit a Manuscript</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-cta-combined">
+        <div class="footer-container">
+            <div class="footer-bottom-section">
+                <div class="footer-bottom-left">
+                    <div class="footer-logo">
+                        <img src="src/logo/Synthica Logo.png" alt="Synthica" class="footer-logo-img">
+                        <span class="footer-logo-text">Synthica</span>
+                    </div>
+                    <p class="footer-copyright">&copy; 2026 Synthica. All rights reserved.</p>
+                </div>
+                <div class="footer-bottom-right">
+                    <div class="footer-social">
+                        <a href="https://www.linkedin.com/company/synthica-org/" class="social-icon" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                        </a>
+                        <a href="https://www.instagram.com/synthica_org/" class="social-icon" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+<script>
+/* ── Helpers ── */
+const ORCID_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><circle cx="12" cy="12" r="12" fill="#A6CE39"/><path d="M8.5 7H10V17H8.5V7Z" fill="white"/><path d="M13 7H15.5C17.9 7 19.5 8.6 19.5 12C19.5 15.4 17.9 17 15.5 17H13V7ZM14.5 15.6H15.3C17 15.6 18 14.5 18 12C18 9.5 17 8.4 15.3 8.4H14.5V15.6Z" fill="white"/><circle cx="8.5" cy="5.5" r="1" fill="white"/></svg>`;
+
+const AVATAR_COLORS = [
+    ['#2589ed','#78b4fb'],['#1a6bb5','#4999e8'],['#0f4c81','#2589ed'],
+    ['#1565c0','#42a5f5'],['#01579b','#0288d1'],['#006064','#00838f'],
+    ['#004d40','#00695c'],['#311b92','#512da8'],['#880e4f','#c2185b'],
+];
+
+function avatarGrad(name) {
+    let h = 0;
+    for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+    const [a, b] = AVATAR_COLORS[h % AVATAR_COLORS.length];
+    return `linear-gradient(135deg,${a},${b})`;
+}
+
+function inits(name) {
+    return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+}
+
+function gdrive(id) {
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w300`;
+}
+
+/* ── Data ── */
+const LEADERS = [
+    {
+        name: 'Quang Bui', roleBadge: 'director', role: 'Founder & Executive Director',
+        orcid: '0009-0006-7702-116X',
+        affils: ['American International School Vienna','Synthica Research Group','MIT Laboratory of Computational Physiology'],
+        bio: 'Quang Bui is the founder and executive director of Synthica. His mission is to make research approachable to scholars worldwide by providing them with free and low-cost opportunities. He doesn\'t believe in prioritizing prestige over actual work. To him, real output is what matters.',
+        img: 'public/assets/editorial/quang.png'
+    },
+    {
+        name: 'Aaryan Senthilvanan', roleBadge: 'chief', role: 'Chief Editor', published: true,
+        orcid: '0009-0005-7930-2224',
+        affils: ['S.Y.A.L.I.S Labs','International Academy Okma, MI','Synthica Research Group'],
+        bio: 'Aaryan Senthilvanan is the Founder of S.Y.A.L.I.S Labs, BrainReach, BravizineOS, and InteractionFormer. His mission is to destigmatize mental health and erase cognitive absolutism through intellectual modalities. He has presented at Stanford, Harvard, and Johns Hopkins with novel protein softwares and is Non-OA Published in Nature.',
+        img: 'public/assets/editorial/aaryan.jpg'
+    },
+    {
+        name: 'Kai Ming Ng', roleBadge: 'chief', role: 'Chief Editor — AI Policy',
+        orcid: '0009-0004-7109-0266',
+        affils: ['Advisor, Green IO','Synthica Research Group'],
+        bio: 'Policy researcher with 14 years of end-to-end experience in research, grant negotiation, programme development, evaluation, and training across NA, EMEA, and APAC regions. 10 years in software, security, and solution architecture spanning NUS, DSTA, DSO, NQSN+, and KPMG.',
+        img: gdrive('1LJVJj_VlsZf11GOmLFB2amwUll2SD1ZY')
+    }
+];
+
+const SENIOR_EDITORS = [
+    {name:'Antonio Pineda Guerrero',   cat:'Biology',         orcid:'0009-0008-0704-1135', affils:['Universitat Jaume I, Spain','CARDIO — Cardiovascular Diseases'],          bio:'Medical student at Universitat Jaume I and Ernest Breva Award recipient. Research spans cardiovascular epidemiology, translational neuroscience, and digital health innovation.',         img:null},
+    {name:'Soham Biren Katlariwala',   cat:'Computer Science',orcid:'0009-0008-1178-6543', affils:['IIT Madras, Chennai','Gujarat Technological University'],                   bio:'Interdisciplinary ML researcher at MIT Critical Data, Missouri S&T, and the Neuroscience Foundation. Specialising in Graph Theory, NeuroAI, and Radiology AI.',                        img:null},
+    {name:'Abhinav Mortha',            cat:'Biology',         orcid:'0009-0003-2978-2747', affils:['Carmel High School, Indiana'],                                              bio:'Junior interested in complex biological data interpretation. Qualified for ISEF, and guides over 10 students through developing their own research projects.',                            img:null},
+    {name:'Nicholas Mino',             cat:'Computer Science',orcid:'0009-0005-8825-9969', affils:['Carnegie Mellon University','Posematic'],                                   bio:'CMU sophomore majoring in AI. Co-founder, CTO, and ML Engineer at Posematic. Interests include ML theory, model evaluation, quantum ML, and computer vision.',                        img:null},
+    {name:'Keerthivasan Radhakrishnan',cat:'Computer Science',orcid:'0009-0003-7476-6949', affils:['Authenta','National University of Singapore'],                             bio:'Research Engineer — Audio at Authenta, specializing in forensic deepfake detection. Pursuing MS in Business Analytics from NUS.',                                                    img:null},
+    {name:'K. V. S. Rakesh',           cat:'Computer Science',orcid:'0009-0008-1138-9433', affils:['Independent Researcher','IIIT Nagpur'],                                    bio:'ECE graduate from IIIT Nagpur, published Springer researcher. Interests span electronics, AI/LLMs, computer vision, neuroscience, and mathematics.',                                  img:null},
+    {name:'Mim Mony',                  cat:'Computer Science',orcid:'0009-0006-5307-6959', affils:['International University of Business Agriculture and Technology'],          bio:'CSE undergraduate with focus in AI, ML, and NLP. Develops ML models and contributes to AI-driven sustainability research.',                                                            img:null},
+    {name:'Clayton Wangsanata',        cat:'Economics',       orcid:'0009-0002-0242-8812', affils:['Lambert High School, Suwanee, GA'],                                        bio:'Econometrics researcher, winner of Best Abstract at IJSI 2026. Specializes in auditing algorithmic risk through chaos theory and topological mapping of financial manifold metrics.',   img:null},
+    {name:'Lydia Liu',                 cat:'Economics',       orcid:'0009-0002-7616-2738', affils:['Los Gatos High School, CA','San Jose State University','MIT'],             bio:'Independent researcher specializing in empirical economics and behavioral finance. Builds econometric models studying interest rates, housing markets, and investor behavior.',          img:gdrive('1UYAG-AXxww_TSpPpCV2G36PkpvhUH-j7')},
+    {name:'Luna (Mai Khanh) Tran',     cat:'Humanities',      orcid:'0009-0009-3771-9995', affils:['Concordia International School Hanoi','Lumiere Education — Oxford'],       bio:'Published in the Oxford Journal of Student Scholarship. Currently collaborating on a research project involving nearly one million students in South Africa.',                            img:gdrive('1jWWMcgGo-brXoJP2G9CzZ5eETlHNm_MH')},
+    {name:'Ayush Ranjan',              cat:'Mathematics',     orcid:'0009-0008-2998-0176', affils:['Oakton High School, Virginia','The Wharton School'],                       bio:'Researcher at The Wharton School, stochastically modeling interest rates and their impact on bond portfolios. DECA State Champion in Virginia.',                                        img:gdrive('1d_OXDfUTwYRvtMYOavGUaOEux3ofqEaO')},
+    {name:'Er. Easwaramoorthy Sriram', cat:'Physics',         orcid:null,                   affils:['Independent Researcher'],                                                  bio:'Engineer specializing in VLSI design, CMOS technology, and advanced semiconductor systems. Technical portfolio spans TFETs, GaN HEMTs, and 6G edge-fed antennas.',                       img:null},
+    {name:'Shriya Uttamchandani',      cat:'Psychology',      orcid:'0009-0007-1334-8267', affils:['Del Norte High School, San Diego, CA'],                                    bio:'Junior interested in neuroscience. Academic work focuses on neurodegenerative disorders, cognitive processes, and emerging approaches to early detection and treatment.',                img:gdrive('1drA5rPxLXWaGnYsBrgx5xbujKwIkaXNx')},
+    {name:'Ryan Robert Cramer McNulty',cat:'Economics',       orcid:'0009-0006-7209-3340', affils:['UC Santa Barbara'],                                                        bio:'Researcher at UCSB in Economics and Accounting. Research focuses on AI in hiring, sports prediction models, and the impact of migration on the U.S. CPI.',                             img:null},
+    {name:'Esha Shahbaz',              cat:'Chemistry',       orcid:'0009-0008-5043-7573', affils:['GCWUS'],                                                                    bio:'Biotech student with research interests at the intersection of AI, ML, and healthcare — particularly in diagnostics and de novo drug design.',                                          img:null},
+];
+
+const ASSOCIATE_EDITORS = [
+    {name:'Candace Hon',                    cat:'Biology',         orcid:'0009-0004-4403-0890', affils:['St. Robert CHS, Ontario'],                      bio:null,                                                                                                          img:gdrive('1Loe-F8fsxfnew5Z5duWHEeMooNaixtnc')},
+    {name:'Syed Hamzah Rizvi',              cat:'Computer Science',orcid:'0009-0004-9864-6607', affils:['West Lafayette Jr/Sr High School','MIT LCP'],   bio:'Main interests in bio-inspired robotics. Works with Professor Celi at MIT on MIMIC. Made state for science fair, winning $15k from the Naval Science Academy.',                   img:gdrive('1biXAZXhWaiBCcD6WkrlB2k17GOogWpS5')},
+    {name:'Sahil Singh',                    cat:'Computer Science',orcid:'0009-0008-6764-2784', affils:['Fulton Science Academy, GA','Georgia Tech'],    bio:'Freshman specializing in ML and applied mathematics. Working on biomedical engineering with physics-informed neural operators on cardiac health care under a GT mentor.',           img:null},
+    {name:'Damaris O. Aregbesola',          cat:'Biology',         orcid:'0009-0004-5771-938X', affils:['Thornridge High School, IL','The Hub — STEM'], bio:'Through Voice4Brain, creates educational content promoting health, hope, and healing while inspiring others to explore neurology.',                                                  img:gdrive('15cyhgRVo4gED3DsK-S5a4Xiq9YAvHsE')},
+    {name:'Abhinav Kothuri',                cat:'Biology',         orcid:'0009-0002-6320-2980', affils:['Independence High School, TX','NEXEDGE Research Lab'], bio:'Project lead at NEXEDGE Research Lab. Conducts in-person research with a university professor and mentors students in research.',                                             img:null},
+    {name:'David Abebe',                    cat:'Psychology',      orcid:'0009-0003-2393-5001', affils:['Westminster Christian Academy, MO','WashU'],   bio:'Founder of MindScroll Health, providing free social media resources for adolescents. Currently working on papers under researchers at WashU and UMSL.',                           img:null},
+    {name:'Aryan Shah',                     cat:'Biology',         orcid:'0009-0009-5917-7357', affils:['Dupont Manual High School, KY'],                bio:'Multiple years of iGEM experience studying PFAS and conducting wet-lab research in lung cancer. Builds robots ranging from 1 lb battlebots to VEX V5.',                         img:gdrive('1N3QifLjXlV0SX9GJaC0fwwHt8V7lWqQ5')},
+    {name:'Kanav Sah',                      cat:'Biology',         orcid:'0009-0000-6697-7015', affils:['Round Rock High School, TX'],                   bio:'Specializes in cancer biology and medicinal chemistry. Conducted independent research examining disease mechanisms and therapeutic approaches in oncology.',                         img:gdrive('1t-h6rmR_NtS1N8coViwJROmPyM_ZGRwT')},
+    {name:'Colin Xu',                       cat:'Economics',       orcid:'0009-0009-0685-8714', affils:['The Awty International School, TX'],            bio:'Interested in climate economics and sustainability. Researching at the Chinese Academy of Sciences studying microbial remediation. Ranked 9th in U.S. for debate.',            img:null},
+    {name:'Danny Zheng',                    cat:'Computer Science',orcid:'0009-0000-4639-2642', affils:['The Bronx High School of Science, NY','Emory University'], bio:'Research experience at UC Berkeley and NYU. Currently writing a research paper at Emory University.',                                                                     img:gdrive('1buXpIQ9u3djc7Oj85nUH00zq-BsAIOux')},
+    {name:'Emma Ma',                        cat:'Chemistry',       orcid:'0009-0006-7470-2170', affils:['Chinese International School, Hong Kong'],      bio:'Researched autoimmune diseases in pregnancy and pharmaceuticals, the former a finalist at a medical research conference. Interned at HKU Pharmacy.',                           img:null},
+    {name:'Terry Ding',                     cat:'Computer Science',orcid:'0009-0006-3206-8861', affils:['American High School, CA'],                      bio:'Founder of ChorusAI, an open-source decentralized distributed LLM server. Also conducting independent ML research rebuilding fundamental trading strategies.',                 img:null},
+    {name:'Ashub Shafqat',                  cat:'Computer Science',orcid:'0009-0002-4422-2679', affils:['University of Agriculture Faisalabad, Pakistan'],bio:'Software Engineering student with experience in full-stack development and AI systems. Values clarity and structure in research.',                                              img:null},
+    {name:'Matteo Gabriel S. Galgo',        cat:'Computer Science',orcid:'0009-0007-0675-5956', affils:['Tagum City National High School, Philippines'], bio:'Affiliated with international research teams spanning neuroscience and beyond. Has authored and presented work nationally, mentored student research across schools.',              img:null},
+    {name:'Mehroze Ismail',                 cat:'Biology',         orcid:'0009-0008-3886-4521', affils:['King Edward Medical University, Lahore'],        bio:'Medical Graduate from KEMU. Has cleared USMLE Step 1 and Step 2 CK. Preparing for Residency in the USA.',                                                                    img:gdrive('1HqnTE9Spfs4xLfF0Z3nAj0vIg-B4xHOo')},
+    {name:'Axel Hezron G. Base',            cat:'Biology',         orcid:'0009-0004-9839-936X', affils:['Quezon City Science High School'],              bio:'Service-oriented student invested in neuroscience, technology, and psychology. Worked in life science research for drug discovery and robotics for agriculture.',               img:null},
+    {name:'Sujal Kumar Poddar',             cat:'Economics',       orcid:'0009-0001-5835-2207', affils:['Amity University Kolkata'],                      bio:'Undergrad student and founder who has spent years writing, editing, and building things from scratch. Prefers clean, sharp content with no unnecessary fluff.',               img:null},
+    {name:'Kevin Yang',                     cat:'Mathematics',     orcid:'0009-0004-2693-7659', affils:['Canyon Crest Academy, CA'],                     bio:'Strong interest in physics, applied mathematics, and stochastic processes. Developed skills across math olympiads and competitions.',                                            img:null},
+    {name:'Nazifa Tahseen Gawhar',          cat:'Economics',       orcid:'0009-0001-2583-8905', affils:['Singapore International School'],               bio:'Ranked top 500 out of 48,000 in the National Economics Olympiad. Received academic distinctions in top international essay competitions including an Amazon publication.',      img:null},
+    {name:'Henry Russell',                  cat:'Mathematics',     orcid:'0009-0004-0008-4651', affils:['Gettysburg Area High School'],                  bio:'Professional freelance journalist and Research Fellow with Non-Trivial. TSA National win in Biotech. Reachable at hruss.com.',                                               img:null},
+    {name:'Muskaan Khaidun',                cat:'Biology',         orcid:'0009-0002-3751-4147', affils:['WHSG'],                                         bio:null,                                                                                                          img:null},
+    {name:'Isabhel Saraza',                 cat:'Chemistry',       orcid:null,                   affils:['De La Salle — College of Saint Benilde'],        bio:'Researcher focusing on climate technology, biomedical engineering, and AI systems. Projects shortlisted for beVisioneers, ranking Top 5 globally.',                          img:null},
+    {name:'Shanmuka Gottimukkala',          cat:'Computer Science',orcid:'0009-0002-2991-1249', affils:['Milton High School, GA','MIT Critical Data × NSRI'], bio:'USACO Gold competitor and MIT Critical Data lead. Develops systems from CNN-based pollution classifiers to emotion-aware IoT assistants.',                               img:gdrive('1qx3bXupQxCDAZchsYUGg8Tcz5NJUIa-Z')},
+    {name:'Jyoshitaa Mahendrarajan Lavanya',cat:'Biology',         orcid:'0009-0007-1179-7755', affils:['Walnut Grove Secondary School, Canada'],         bio:'Explored the effects of Beta-amyloid accumulation in Alzheimer\'s disease. Regularly participates in science-driven initiatives.',                                            img:gdrive('1SMiYbdyqj32xeyZAtns52w3leRYeZKXJ')},
+    {name:'Yashasvi Rakesh Haswani',        cat:'Chemistry',       orcid:'0009-0009-7951-4007', affils:['G.D. Goenka International School, Surat'],       bio:'Investigated carbon nanotechnology for oil and chemical spill remediation — selected for the Convergence Journal, one nomination per cohort.',                                 img:null},
+    {name:'Jiwan Kim',                      cat:'Mathematics',     orcid:'0009-0001-8589-0211', affils:['Chapel Hill High School'],                      bio:'Interested in topology and mathematical linguistics. Research at Seoul National University and UNC Kenan-Flagler. Nationally ranked archer.',                                  img:null},
+    {name:'Yousef Turk',                    cat:'Computer Science',orcid:'0009-0006-2307-7627', affils:['Liwa International School','D*spatch — Founder'],bio:'Writes systems on real infrastructure, places junior researchers on briefs they have to ship, and reads frontier CS papers. Throughline: judgment.',                             img:gdrive('1mOuoHgVwTtpcYF5MKc5jNMRYkPRUz7dl')},
+    {name:'Kinza Khan',                     cat:'Biology',         orcid:'0009-0003-6482-6055', affils:['Ziauddin University'],                           bio:'Recent Human Nutrition graduate. Ambitious, hard-working, and highly work-oriented with a strong ability to collaborate effectively.',                                        img:null},
+    {name:'Saamarth Kalwani',               cat:'Computer Science',orcid:'0009-0009-3839-1426', affils:['Krishna Public School, India','Pioneer Academics'],bio:'Systems-focused researcher working at the intersection of AI, sustainability, and real-world problem-solving. Built a solar-powered automated farming system.',                img:null},
+    {name:'Robert Ryan',                    cat:'Computer Science',orcid:'0009-0000-9458-9095', affils:['ACS Athens','North Carolina State University'],  bio:'17-year-old IB student, ML Engineering intern, and ML research assistant at NC State University. Founder of Informed.',                                                  img:gdrive('1Utw0F8Db5SQO3Pnu2G-_MExw6roBrNft')},
+    {name:'Natalie Chee',                   cat:'Psychology',      orcid:'0009-0006-7931-0440', affils:['Canadian International School of Hong Kong'],    bio:'Founded The Synaptic Archive, the first youth magazine bridging neuroscience and psychology. International harpist and IB candidate.',                                        img:gdrive('1qSWVDPs4t2igK3JgJImpeYCd6thk-xF-')},
+    {name:'Ansh Rao',                       cat:'Economics',       orcid:'0009-0004-7882-4621', affils:['South Brunswick High School','Sports Trinity'],  bio:'Developed research papers with the Federal Reserve and Harvard. Built InternLink, an AI-powered platform for research and internship outreach.',                            img:null},
+    {name:'Chris Litto',                    cat:'Physics',         orcid:'0009-0001-8583-7672', affils:['Ocean Lakes High School'],                      bio:'Passionate about autonomous systems. Combines DECA and journalism leadership with technical training from NASA-affiliated and MIT programs.',                                 img:gdrive('1hNXUGbr1tGVgarer_GR8x5Qph1TEoF5d')},
+    {name:'Srihan Seemakurty',              cat:'Computer Science',orcid:'0009-0009-1260-3742', affils:['Denmark High School'],                           bio:'Microsoft Azure AI, Python, and Data Analytics certified. Experience in financial statement analysis, portfolio management, and NLP.',                                       img:null},
+    {name:'Arjun Vijay Prakash',            cat:'Computer Science',orcid:'0009-0004-6835-2069', affils:['City Montessori School','Ashoka University (LGP)'],bio:'Full-stack developer. Building Pilot, an early-stage startup. Researching mechanistic interpretability, neurosymbolic AI, and rare disease prediction. INSEF Bronze Medalist.',img:null},
+    {name:'Mohd. Iyaad Dilnawaz Mukadam',   cat:'Physics',         orcid:'0009-0008-0105-1156', affils:['Pace Junior Science College, Mumbai','NSRI'],    bio:'Passionate young researcher focused on bridging physics, information theory, and emerging technologies.',                                                                    img:gdrive('1QoaaUbQ-7f7KxTgzLVxzY53hWrlW3Ehy')},
+    {name:'Beede Miracle Chichetaram',      cat:'Biology',         orcid:'0009-0000-2299-2731', affils:['University of Abuja','African Digital Health Student Network'], bio:'Involved in MIT Critical Data × NSRI. Interests in antimicrobial resistance, data-driven approaches, and digital health solutions.',                             img:gdrive('1C7j-QBfHCwO7sQHHZzFDoetLFdOu-6q6')},
+    {name:'Rahma Naqui',                    cat:'Computer Science',orcid:'0009-0003-0433-8797', affils:['Lamrin Tech Skills University, Punjab','EcoAction Magazine'], bio:'Research writer for EcoAction Magazine. Passionate about AI, Data Science, Psychology, Neuroscience, and Environmental Science.',                                    img:gdrive('1nFHlfMJjc372JBhxxTV21oPMPCfwQaBe')},
+    {name:'Hieu Le',                        cat:'Computer Science',orcid:'0009-0007-9694-2893', affils:['Alfred Nobel School'],                           bio:'ML researcher with experience in emotion classification and detection. Operates across the full ML pipeline using TensorFlow, Hugging Face, and scikit-learn.',                  img:null},
+    {name:'Sai Harshitha Bhogavalli',       cat:'Humanities',      orcid:'0009-0008-7351-1174', affils:['Synthica Research Group'],                       bio:'Biomedical and AI-focused researcher with experience in neurovascular analytics, ocular microvascular modeling, and community health leadership.',                             img:null},
+];
+
+const REVIEW_EDITORS = [
+    {name:'Amna Noman',              cat:'Biology',         orcid:'0009-0002-0911-2589', affils:['Salim Habib University'],                           bio:'Research Associate at NSRI. Undergraduate thesis focused on the human microbiome.',                                                                               img:null},
+    {name:'Mrigendra Singh',         cat:'Humanities',      orcid:'0009-0005-1631-1430', affils:['W. H. Smith Memorial School'],                      bio:'Acclaimed debater and published author featured in The Guardian. Inventor of Finger Guide. Spoken at the Banaras Lit Fest.',                                     img:gdrive('1xSQXN2GrOZBjNshXZ5fmtNSGS9Pvzz1_')},
+    {name:'Sidianna Thay',           cat:'Computer Science',orcid:'0009-0000-2416-2635', affils:['Paragon International University'],                 bio:null,                                                                                                      img:null},
+    {name:'Miftahul Jannah Nowsheen',cat:'Chemistry',       orcid:null,                   affils:[],                                                   bio:'Rising 11th grader from Bangladesh with a deep passion for Chemistry. Aspiring military neurosurgeon.',                                                         img:null},
+    {name:'Uttirn Gyan',             cat:'Computer Science',orcid:'0009-0009-8169-297X', affils:['Christ Academy ICSE School, Bengaluru'],             bio:'AI researcher with 99% in ICSE board exams. Has built GPT-124M, ViT/DeiT, quantum CNNs, cybersecurity systems, and RL environments.',                          img:gdrive('1owG4hYtPdNdbgPyOneGWIx8vexlvq0Ku')},
+    {name:'Fajil Luhar',             cat:'Economics',       orcid:'0009-0000-2745-3489', affils:['Sanskar High School, GJ, India'],                   bio:'Independent researcher focused on micro-economics, financial modeling, and applied data analysis.',                                                            img:null},
+    {name:'Khang Nguyen',            cat:'Humanities',      orcid:'0009-0007-7057-4981', affils:['Vinschool, HCMC, Vietnam'],                         bio:'High school freshman with an interest in Computer Science and AI/ML. New to research and eager to learn.',                                                     img:null},
+    {name:'Sara Saif',               cat:'Psychology',      orcid:'0001-0001-2442-8453', affils:['Kamala Nehru College, University of Delhi'],         bio:'Psychology student with deep interest in psychopathology and neuropsychology. Working toward social impact through youth-led nonprofits.',                      img:gdrive('1sFAyky-NKJ_S-AiTn-jk8O2_8Lf9YDqP')},
+    {name:'Agastya Turaga',          cat:'Computer Science',orcid:'0009-0002-4582-6888', affils:['South Brunswick High School'],                      bio:'Programmed drones in MIT Lincoln Laboratory\'s Beaver Works Program. Top 5% in Garden State CTF 2026. Co-founded a STEM nonprofit.',                         img:null},
+    {name:'Insaf Daalache',          cat:'Computer Science',orcid:'0009-0000-1271-2003', affils:['Algeria High School'],                              bio:'Exploring low-level computing through OS development. UNICEF Global Reporter with emphasis on data-driven insights.',                                       img:null},
+    {name:'Kamrul Hassan',           cat:'Physics',         orcid:'0009-0008-2990-1036', affils:['Fyruz Education Services, Bangladesh','American Spaces, Bangladesh'], bio:'Strong interest in scientific inquiry focusing on evaluating clarity, rigor, and logical structure.',                                           img:null},
+    {name:'Angela Mary Christo',     cat:'Psychology',      orcid:'0009-0005-6733-6822', affils:['Sunrise English Private School, Abu Dhabi'],         bio:'Pitched an adolescent mental health startup at E-Summit, IIT Bombay. Conducted community research on cultural identity (Project Curriculum).',              img:null},
+    {name:'Nusaiba Tazreen Tanisha', cat:'Computer Science',orcid:'0009-0001-8546-7384', affils:['YWCA Higher Secondary Girls\' School'],              bio:'Winner of 7 medals in the International Robot Olympiad. Former president of her school\'s science club. Expertise in Python and Unity.',                     img:gdrive('1uJ5aGVtp_Y-mwSFxDff-8NmrsLCMfVkp')},
+    {name:'Wyatt Choe',              cat:'Computer Science',orcid:'0009-0004-9989-4717', affils:['Lambert High School, GA'],                          bio:'Built JARVIS — a multi-modal AI assistant with voice recognition, gesture control, computer vision, and OS-level integration — solo.',                        img:null},
+    {name:'Hrushikesan Barani',      cat:'Mathematics',     orcid:'0009-0002-7484-1454', affils:['Lambert High School, GA'],                          bio:'Researcher at Synthica and NSRI, specializing in Infrastructure AI, Astrophysics, and Software Engineering. AWS-certified.',                               img:null},
+    {name:'Aneesh Thatta',           cat:'Economics',       orcid:null,                   affils:['Lambert High School, GA'],                          bio:'Economics enthusiast contributing to global publications of economic writing for NGOs in Asia.',                                                            img:null},
+    {name:'Abhinav Shriram',         cat:'Economics',       orcid:null,                   affils:['Delhi Public School, Bangalore'],                   bio:null,                                                                                                      img:null},
+    {name:'Peyton Wiley',            cat:'Economics',       orcid:'0009-0009-5114-4032', affils:['Acellus Academy'],                                  bio:'16-year-old aspiring accountant and musician with a passion for economics, research, writing, and continuous learning.',                                    img:gdrive('1N4ON48Ii1NOrDfvW3A3OHz14Z1p-6-fj')},
+    {name:'Amanjot Parmar',          cat:'Psychology',      orcid:'0009-0009-0300-0309', affils:['Middlesex High School'],                            bio:'Junior aspiring to become a physician. Currently a researcher for anorexia and other eating disorders.',                                                    img:gdrive('1Wfgcnu5cnWkGkNncqfcsUImE67nrBJIg')},
+    {name:'Retaj Ashour',            cat:'Computer Science',orcid:'0009-0006-6485-1455', affils:['Sama Winchester College','Reze2 El Hanem — President'],bio:'Top-ranked academic achiever (1st in 10th grade) and NASA Space Apps Global Nominee. CEO and founder of multiple nonprofits.',                            img:null},
+    {name:'Beede Marvel',            cat:'Chemistry',       orcid:'0009-0007-6228-5231', affils:['University of Abuja','African Digital Health Student Network'], bio:'Aspiring research data analyst with interests in antimicrobial resistance, digital health, and medical technology.',                              img:gdrive('1UqwXdvlVsCUxSd15wqKcfxT1Xyuh31Fn')},
+    {name:'Maryam',                  cat:'Chemistry',       orcid:'0009-0005-7741-7167', affils:['Abdul Wali Khan University, Mardan'],                bio:'MPhil in Biochemistry. Academic background in biochemistry and bioinformatics.',                                                                          img:null},
+    {name:'Shritha Repala',          cat:'Computer Science',orcid:'0009-0009-1917-2113', affils:['Synthica Research Group'],                          bio:'Rising high school senior from Texas, aspiring Software Engineer specializing in EdTech. Intersects CS and AI with cognitive science.',                     img:null},
+];
+
+/* ── Render helpers ── */
+function leaderCard(d) {
+    const imgHtml = `<img src="${d.img}" alt="${d.name}" class="eb-leader-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="eb-leader-initials" style="display:none">${inits(d.name)}</div>`;
+    const pubBadge = d.published ? `<div class="eb-published-badge">12x Published</div>` : '';
+    const orcidHtml = d.orcid ? `<a class="eb-orcid-link" href="https://orcid.org/${d.orcid}" target="_blank" rel="noopener">${ORCID_SVG} ${d.orcid}</a>` : '';
+    const affilHtml = d.affils.map(a=>`<span class="eb-affil-tag">${a}</span>`).join('');
+    return `<div class="eb-leader-card">
+        <div class="eb-leader-photo-wrap">${imgHtml}</div>
+        <div class="eb-role-badge ${d.roleBadge}">${d.role}</div>
+        ${pubBadge}
+        <h3 class="eb-leader-name">${d.name}</h3>
+        ${orcidHtml}
+        <div class="eb-affils">${affilHtml}</div>
+        <p class="eb-bio">${d.bio}</p>
+    </div>`;
+}
+
+function editorCard(e) {
+    const initStr = inits(e.name);
+    const bg = avatarGrad(e.name);
+    const imgHtml = e.img
+        ? `<img src="${e.img}" alt="${e.name}" class="eb-editor-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="eb-editor-initials" style="display:none;background:${bg}">${initStr}</div>`
+        : `<div class="eb-editor-initials" style="background:${bg}">${initStr}</div>`;
+    const orcidHtml = e.orcid ? `<a class="eb-orcid-link" href="https://orcid.org/${e.orcid}" target="_blank" rel="noopener" style="font-size:0.68rem;margin-bottom:0.5rem">${ORCID_SVG} ${e.orcid}</a>` : '';
+    const affilHtml = (e.affils||[]).filter(a=>a&&a!=='Synthica Research Group').slice(0,2).map(a=>`<div class="eb-editor-affil">${a}</div>`).join('');
+    const bioHtml = e.bio ? `<p class="eb-editor-bio">${e.bio}</p>` : '';
+    return `<div class="eb-editor-card">
+        <div class="eb-editor-avatar-wrap">${imgHtml}</div>
+        <div class="eb-editor-category">${e.cat}</div>
+        <div class="eb-editor-name">${e.name}</div>
+        ${orcidHtml}
+        <div class="eb-editor-affils">${affilHtml}</div>
+        ${bioHtml}
+    </div>`;
+}
+
+/* ── Mount ── */
+document.getElementById('leaders-grid').innerHTML = LEADERS.map(leaderCard).join('');
+document.getElementById('senior-grid').innerHTML = SENIOR_EDITORS.map(editorCard).join('');
+document.getElementById('associate-grid').innerHTML = ASSOCIATE_EDITORS.map(editorCard).join('');
+document.getElementById('review-grid').innerHTML = REVIEW_EDITORS.map(editorCard).join('');
+
+/* ── Nav hover ── */
+const dropdownItems = document.querySelectorAll('.nav-item-dropdown');
+let hoverTimeout;
+dropdownItems.forEach(item => {
+    const dropdown = item.querySelector('.dropdown-menu');
+    item.addEventListener('mouseenter', () => { clearTimeout(hoverTimeout); item.classList.add('active'); });
+    item.addEventListener('mouseleave', () => { hoverTimeout = setTimeout(() => item.classList.remove('active'), 150); });
+    if (dropdown) {
+        dropdown.addEventListener('mouseenter', () => { clearTimeout(hoverTimeout); item.classList.add('active'); });
+        dropdown.addEventListener('mouseleave', () => { hoverTimeout = setTimeout(() => item.classList.remove('active'), 150); });
+    }
+});
+document.addEventListener('click', e => { if (!e.target.closest('.nav-item-dropdown')) dropdownItems.forEach(i => i.classList.remove('active')); });
+
+/* ── Scroll fade-in ── */
+const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => { if (e.isIntersecting) setTimeout(() => { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }, i*60); });
+}, { threshold: 0.05 });
+document.querySelectorAll('.eb-leader-card,.eb-editor-card,.team-member-card').forEach(c => {
+    c.style.opacity='0'; c.style.transform='translateY(24px)'; c.style.transition='all 0.55s ease'; obs.observe(c);
+});
+</script>
+</body>
+</html>
