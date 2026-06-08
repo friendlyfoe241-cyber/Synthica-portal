@@ -6557,3 +6557,76 @@ body {
         overflow-x: hidden;
     }
 }
+
+/* ── Portal / Sign-In buttons added for dashboard ── */
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.signin-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    color: white;
+    padding: 0.7rem 1.35rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-family: 'Garet', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.signin-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+}
+
+.hero-portal-btn {
+    display: inline-block;
+    margin-left: 1rem;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    color: white;
+    padding: 0.85rem 1.75rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-family: 'Garet', sans-serif;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.hero-portal-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive – stack on mobile */
+@media (max-width: 768px) {
+    .navbar-actions {
+        gap: 0.4rem;
+    }
+    .signin-btn {
+        padding: 0.55rem 0.9rem;
+        font-size: 0.8rem;
+    }
+    .hero-portal-btn {
+        display: block;
+        margin-left: 0;
+        margin-top: 0.875rem;
+        text-align: center;
+    }
+}
