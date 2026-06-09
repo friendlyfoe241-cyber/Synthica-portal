@@ -375,6 +375,15 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+.hero-cta-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 8vh;
+}
+
 .hero-cta-btn {
     background: linear-gradient(135deg, 
         rgba(120, 180, 251, 0.9) 0%, 
@@ -391,7 +400,6 @@ body {
     transition: all 0.3s;
     box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    margin-bottom: 8vh;
     position: relative;
     text-decoration: none;
     display: inline-block;
@@ -418,6 +426,29 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 6px 25px rgba(255, 255, 255, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.hero-portal-btn {
+    display: inline-block;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    color: white;
+    padding: 1rem 2.25rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-family: 'Garet', sans-serif;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.hero-portal-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
 }
 
 .highlight-you {
@@ -7422,4 +7453,15 @@ a.db-reading-title:hover { color: #2589ed; }
 
 @media (max-width: 480px) {
   .db-stats-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* Login button spinner */
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0,0,0,0.15);
+  border-top-color: #1F2937;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
 }

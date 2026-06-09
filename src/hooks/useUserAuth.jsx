@@ -25,20 +25,50 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        // Fetch user profile from Firestore
-        const profile = await fetchOrCreateProfile(firebaseUser);
-        setUserProfile(profile);
-      } else {
-        setUser(null);
-        setUserProfile(null);
-      }
+    // Safety timeout — if Firebase hasn't responded in 6s, unblock the UI.
+    // This happens when the domain isn't in Firebase's Authorized Domains list.
+    const timeout = setTimeout(() => {
       setLoading(false);
-    });
+    }, 6000);
 
-    return unsubscribe;
+    let unsubscribe;
+    try {
+      unsubscribe = onAuthStateChanged(
+        auth,
+        async (firebaseUser) => {
+          clearTimeout(timeout);
+          try {
+            if (firebaseUser) {
+              setUser(firebaseUser);
+              const profile = await fetchOrCreateProfile(firebaseUser);
+              setUserProfile(profile);
+            } else {
+              setUser(null);
+              setUserProfile(null);
+            }
+          } catch (e) {
+            console.error('Profile fetch error:', e);
+          } finally {
+            setLoading(false);
+          }
+        },
+        (error) => {
+          // Auth error (e.g. domain not authorized)
+          console.error('Firebase Auth error:', error);
+          clearTimeout(timeout);
+          setLoading(false);
+        }
+      );
+    } catch (e) {
+      console.error('Firebase init error:', e);
+      clearTimeout(timeout);
+      setLoading(false);
+    }
+
+    return () => {
+      clearTimeout(timeout);
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const fetchOrCreateProfile = async (firebaseUser) => {
@@ -47,7 +77,6 @@ export function AuthProvider({ children }) {
     if (snap.exists()) {
       return { uid: firebaseUser.uid, ...snap.data() };
     }
-    // New user — create a pending profile
     const newProfile = {
       displayName: firebaseUser.displayName || 'Unnamed',
       email: firebaseUser.email,

@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import Globe from '../components/Globe';
 import Meteors from '../components/Meteors';
 import RotatingText from '../components/RotatingText';
 import CollegesScroller from '../components/CollegesScroller';
@@ -49,14 +48,13 @@ const Home = () => {
       <div className="header" id="home">
         <Meteors />
         <Navbar />
-        
-        <div className="hero-content hero-globe-only hero-globe-layout">
-          <div className="hero-copy">
-            <h1>Research made<br />approachable for <span className="highlight-you">YOU</span></h1>
-            <p>Synthica creates a playground for high school students to conduct research and participate in competitions regardless of their levels.</p>
-          </div>
-          <div className="hero-globe-container">
-            <Globe />
+
+        <div className="hero-content">
+          <h1>Research made<br />approachable for <span className="highlight-you">YOU</span></h1>
+          <p>Synthica creates a playground for high school students to conduct research and participate in competitions regardless of their levels.</p>
+          <div className="hero-cta-row">
+            <a href="https://discord.gg/8wPzZkGy5Z" target="_blank" rel="noopener noreferrer" className="hero-cta-btn">Join Us Now</a>
+            <a href="/login" className="hero-portal-btn">Member Portal →</a>
           </div>
         </div>
 
