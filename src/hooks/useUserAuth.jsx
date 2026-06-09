@@ -72,21 +72,51 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchOrCreateProfile = async (firebaseUser) => {
-    const ref  = doc(db, 'users', firebaseUser.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      return { uid: firebaseUser.uid, ...snap.data() };
+    if (!firebaseUser?.uid) {
+      throw new Error('Missing authenticated user');
     }
-    // First-time sign-in: create a pending profile
-    const newProfile = {
-      displayName: firebaseUser.displayName || 'Unnamed',
-      email:       firebaseUser.email,
-      photoURL:    firebaseUser.photoURL || '',
-      role:        'pending',
-      createdAt:   serverTimestamp(),
-    };
-    await setDoc(ref, newProfile);
-    return { uid: firebaseUser.uid, ...newProfile };
+
+    try {
+      const ref = doc(db, 'users', firebaseUser.uid);
+      const snap = await getDoc(ref);
+
+      if (snap.exists()) {
+        return {
+          uid: firebaseUser.uid,
+          ...snap.data(),
+        };
+      }
+
+      const newProfile = {
+        displayName: firebaseUser.displayName || 'Unnamed',
+        email: firebaseUser.email || '',
+        photoURL: firebaseUser.photoURL || '',
+        role: 'pending',
+        createdAt: serverTimestamp(),
+      };
+
+      await setDoc(ref, newProfile);
+
+      return {
+        uid: firebaseUser.uid,
+        ...newProfile,
+      };
+    } catch (err) {
+      console.error(
+        'fetchOrCreateProfile error:',
+        err.code,
+        err.message
+      );
+
+      // Fallback profile so dashboard still works
+      return {
+        uid: firebaseUser.uid,
+        displayName: firebaseUser.displayName || '',
+        email: firebaseUser.email || '',
+        photoURL: firebaseUser.photoURL || '',
+        role: 'pending',
+      };
+    }
   };
 
   const signInWithGoogle = async () => {

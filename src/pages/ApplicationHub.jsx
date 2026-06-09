@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, addDoc, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { useUserAuth } from '../hooks/useUserAuth';
 import DashboardShell from '../components/dashboard/DashboardShell';
 import { Link, useLocation } from 'react-router-dom';
@@ -72,14 +72,26 @@ export default function ApplicationHub() {
   };
 
   const submitApplication = async () => {
-    if (!form.statement.trim() || !user) return;
+    if (!form.statement.trim()) return;
+
     setSubmitting(true);
     setSubmitError('');
+
     try {
+      // Auth guard
+      if (!auth?.currentUser) {
+        setSubmitError(
+          'Authentication is still loading. Please wait a few seconds and try again.'
+        );
+        return;
+      }
+
+      const currentUser = auth.currentUser;
+
       await addDoc(collection(db, 'applications'), {
-        userId: user.uid,
-        userName: user.displayName,
-        userEmail: user.email,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || '',
+        userEmail: currentUser.email || '',
         roleApplied: form.roleApplied,
         statement: form.statement,
         projectId: form.projectId || '',
@@ -87,13 +99,26 @@ export default function ApplicationHub() {
         status: 'pending',
         createdAt: serverTimestamp(),
       });
+
       setSubmitted(true);
     } catch (e) {
       console.error('Application submit error:', e);
-      if (e.code === 'permission-denied' || e.code === 'PERMISSION_DENIED') {
-        setSubmitError('Permission denied — Firestore rules need updating. Go to Firebase Console → Firestore → Security tab, paste in the firestore.rules file contents, and click Publish.');
+
+      if (
+        e.code === 'permission-denied' ||
+        e.code === 'PERMISSION_DENIED'
+      ) {
+        setSubmitError(
+          'Permission denied. Please contact an administrator.'
+        );
+      } else if (e.code === 'unavailable') {
+        setSubmitError(
+          'Firestore is temporarily unavailable. Please try again in a few moments.'
+        );
       } else {
-        setSubmitError('Submission failed: ' + (e.message || 'Please try again.'));
+        setSubmitError(
+          e.message || 'Application submission failed.'
+        );
       }
     } finally {
       setSubmitting(false);
