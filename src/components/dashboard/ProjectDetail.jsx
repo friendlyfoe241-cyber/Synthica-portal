@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  collection, addDoc, onSnapshot, orderBy, query,
-  doc, updateDoc, deleteDoc, serverTimestamp,
-} from 'firebase/firestore';
+import { supabase } from '../../lib/supabaseClient';
 import { useUserAuth } from '../../hooks/useUserAuth';
 
 const STATUS_COLS = [
@@ -19,53 +16,120 @@ export default function ProjectDetail({ project, isLead, onBack }) {
   const [announcements, setAnnouncements] = useState([]);
   const [readings, setReadings] = useState([]);
   const [newAnn, setNewAnn] = useState('');
-  const [newTask, setNewTask] = useState({ title: '', description: '', status: 'todo', dueDate: '' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', status: 'todo', due_date: '' });
   const [newReading, setNewReading] = useState({ title: '', url: '', description: '' });
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showReadingForm, setShowReadingForm] = useState(false);
   const [postingAnn, setPostingAnn] = useState(false);
 
   useEffect(() => {
-    const base = `projects/${project.id}`;
-    const unsub1 = onSnapshot(query(collection(db, base, 'tasks'), orderBy('createdAt', 'desc')), snap => {
-      setTasks(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    const unsub2 = onSnapshot(query(collection(db, base, 'announcements'), orderBy('createdAt', 'desc')), snap => {
-      setAnnouncements(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    const unsub3 = onSnapshot(query(collection(db, base, 'readings'), orderBy('createdAt', 'desc')), snap => {
-      setReadings(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return () => { unsub1(); unsub2(); unsub3(); };
+    const projectId = project.id;
+
+    const fetchData = async () => {
+      // Fetch tasks
+      const { data: tasksData } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      setTasks(tasksData || []);
+
+      // Fetch announcements
+      const { data: announcementsData } = await supabase
+        .from('announcements')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      setAnnouncements(announcementsData || []);
+
+      // Fetch readings
+      const { data: readingsData } = await supabase
+        .from('readings')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      setReadings(readingsData || []);
+    };
+
+    fetchData();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('project-detail-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `project_id=eq.${projectId}` }, handleTaskChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements', filter: `project_id=eq.${projectId}` }, handleAnnouncementChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'readings', filter: `project_id=eq.${projectId}` }, handleReadingChange)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [project.id]);
+
+  const handleTaskChange = (payload) => {
+    if (payload.eventType === 'INSERT') {
+      setTasks(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setTasks(prev => prev.map(t => t.id === payload.new.id ? payload.new : t));
+    } else if (payload.eventType === 'DELETE') {
+      setTasks(prev => prev.filter(t => t.id !== payload.old.id));
+    }
+  };
+
+  const handleAnnouncementChange = (payload) => {
+    if (payload.eventType === 'INSERT') {
+      setAnnouncements(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setAnnouncements(prev => prev.map(a => a.id === payload.new.id ? payload.new : a));
+    } else if (payload.eventType === 'DELETE') {
+      setAnnouncements(prev => prev.filter(a => a.id !== payload.old.id));
+    }
+  };
+
+  const handleReadingChange = (payload) => {
+    if (payload.eventType === 'INSERT') {
+      setReadings(prev => [payload.new, ...prev]);
+    } else if (payload.eventType === 'UPDATE') {
+      setReadings(prev => prev.map(r => r.id === payload.new.id ? payload.new : r));
+    } else if (payload.eventType === 'DELETE') {
+      setReadings(prev => prev.filter(r => r.id !== payload.old.id));
+    }
+  };
 
   const addTask = async () => {
     if (!newTask.title.trim()) return;
-    await addDoc(collection(db, `projects/${project.id}/tasks`), {
-      ...newTask,
-      createdBy: user.uid,
-      createdAt: serverTimestamp(),
-    });
-    setNewTask({ title: '', description: '', status: 'todo', dueDate: '' });
-    setShowTaskForm(false);
+    const { error } = await supabase
+      .from('tasks')
+      .insert({
+        project_id: project.id,
+        title: newTask.title,
+        description: newTask.description,
+        status: newTask.status,
+        due_date: newTask.due_date,
+        created_by: user.id,
+      });
+    if (!error) {
+      setNewTask({ title: '', description: '', status: 'todo', due_date: '' });
+      setShowTaskForm(false);
+    }
   };
 
   const updateTaskStatus = async (taskId, status) => {
-    await updateDoc(doc(db, `projects/${project.id}/tasks`, taskId), { status });
+    await supabase.from('tasks').update({ status }).eq('id', taskId);
   };
 
   const deleteTask = async (taskId) => {
-    await deleteDoc(doc(db, `projects/${project.id}/tasks`, taskId));
+    await supabase.from('tasks').delete().eq('id', taskId);
   };
 
   const postAnnouncement = async () => {
     if (!newAnn.trim()) return;
     setPostingAnn(true);
-    await addDoc(collection(db, `projects/${project.id}/announcements`), {
+    await supabase.from('announcements').insert({
+      project_id: project.id,
       content: newAnn,
-      authorId: user.uid,
-      authorName: user.displayName,
-      createdAt: serverTimestamp(),
+      author_id: user.id,
+      author_name: user.user_metadata?.full_name || user.email,
     });
     setNewAnn('');
     setPostingAnn(false);
@@ -73,17 +137,19 @@ export default function ProjectDetail({ project, isLead, onBack }) {
 
   const addReading = async () => {
     if (!newReading.title.trim()) return;
-    await addDoc(collection(db, `projects/${project.id}/readings`), {
-      ...newReading,
-      addedBy: user.uid,
-      createdAt: serverTimestamp(),
+    await supabase.from('readings').insert({
+      project_id: project.id,
+      title: newReading.title,
+      url: newReading.url,
+      description: newReading.description,
+      added_by: user.id,
     });
     setNewReading({ title: '', url: '', description: '' });
     setShowReadingForm(false);
   };
 
-  const members = Object.entries(project.memberNames || {}).map(([uid, name]) => ({
-    uid, name, isLead: uid === project.leadResearcherId
+  const members = Object.entries(project.member_names || {}).map(([uid, name]) => ({
+    uid, name, isLead: uid === project.lead_researcher_id
   }));
 
   return (
@@ -130,7 +196,7 @@ export default function ProjectDetail({ project, isLead, onBack }) {
                   </div>
                   <div className="db-field">
                     <label>Due Date</label>
-                    <input type="date" value={newTask.dueDate} onChange={e => setNewTask(f => ({ ...f, dueDate: e.target.value }))} />
+                    <input type="date" value={newTask.due_date} onChange={e => setNewTask(f => ({ ...f, due_date: e.target.value }))} />
                   </div>
                 </div>
                 <div className="db-field">
@@ -153,7 +219,7 @@ export default function ProjectDetail({ project, isLead, onBack }) {
                       <div key={task.id} className="db-task-card">
                         <p className="db-task-title">{task.title}</p>
                         {task.description && <p className="db-task-desc">{task.description}</p>}
-                        {task.dueDate && <p className="db-task-due">Due: {task.dueDate}</p>}
+                        {task.due_date && <p className="db-task-due">Due: {task.due_date}</p>}
                         <div className="db-task-actions">
                           {col.key !== 'todo' && (
                             <button className="db-task-btn" onClick={() => updateTaskStatus(task.id, STATUS_COLS[STATUS_COLS.findIndex(c => c.key === col.key) - 1].key)}>← Back</button>
@@ -196,8 +262,8 @@ export default function ProjectDetail({ project, isLead, onBack }) {
               ) : announcements.map((a, i) => (
                 <motion.div key={a.id} className="db-announce-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                   <div className="db-announce-meta">
-                    <strong>{a.authorName}</strong>
-                    <span>{a.createdAt?.toDate?.()?.toLocaleDateString() || 'Just now'}</span>
+                    <strong>{a.author_name}</strong>
+                    <span>{a.created_at ? new Date(a.created_at).toLocaleDateString() : 'Just now'}</span>
                   </div>
                   <p>{a.content}</p>
                 </motion.div>

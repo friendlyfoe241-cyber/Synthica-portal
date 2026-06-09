@@ -44,12 +44,12 @@ export default function DashboardShell({ children, activeTab }) {
 
           <div className="ds-user-card">
             <img
-              src={user?.photoURL || '/assets/logo/Synthica Preview Image (5).jpg'}
-              alt={user?.displayName}
+              src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/assets/logo/Synthica Preview Image (5).jpg'}
+              alt={user?.user_metadata?.full_name || user?.email}
               className="ds-avatar"
             />
             <div className="ds-user-info">
-              <p className="ds-user-name">{user?.displayName || 'Researcher'}</p>
+              <p className="ds-user-name">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Researcher'}</p>
               <span className="ds-role-badge" style={{ background: `${roleColor}22`, color: roleColor, border: `1px solid ${roleColor}44` }}>
                 {roleLabel}
               </span>

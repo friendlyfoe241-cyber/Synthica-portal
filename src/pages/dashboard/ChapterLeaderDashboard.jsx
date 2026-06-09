@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from '../../lib/supabaseClient';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 
@@ -15,7 +16,7 @@ const RESOURCES = [
 export default function ChapterLeaderDashboard() {
   const { user, userProfile } = useUserAuth();
   const [chapter, setChapter] = useState(null);
-  const [form, setForm] = useState({ name: '', school: '', location: '', memberCount: '', meetings: '', projectsCompleted: '', notes: '' });
+  const [form, setForm] = useState({ name: '', school: '', location: '', member_count: '', meetings: '', projects_completed: '', notes: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -26,18 +27,26 @@ export default function ChapterLeaderDashboard() {
   const loadChapter = async () => {
     if (!user) return;
     try {
-      const ref = doc(db, 'chapters', user.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data();
+      const { data, error } = await supabase
+        .from('chapters')
+        .select('*')
+        .eq('leader_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading chapter:', error);
+        return;
+      }
+      
+      if (data) {
         setChapter(data);
         setForm({
           name: data.name || '',
           school: data.school || '',
           location: data.location || '',
-          memberCount: data.memberCount || '',
+          member_count: data.member_count || '',
           meetings: data.meetings || '',
-          projectsCompleted: data.projectsCompleted || '',
+          projects_completed: data.projects_completed || '',
           notes: data.notes || '',
         });
       }
@@ -48,15 +57,24 @@ export default function ChapterLeaderDashboard() {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'chapters', user.uid), {
-        ...form,
-        memberCount: Number(form.memberCount) || 0,
+      const payload = {
+        name: form.name,
+        school: form.school,
+        location: form.location,
+        member_count: Number(form.member_count) || 0,
         meetings: Number(form.meetings) || 0,
-        projectsCompleted: Number(form.projectsCompleted) || 0,
-        leaderId: user.uid,
-        leaderName: user.displayName,
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
+        projects_completed: Number(form.projects_completed) || 0,
+        notes: form.notes,
+        leader_id: user.id,
+        leader_name: user.user_metadata?.full_name || user.email,
+      };
+
+      const { error } = await supabase
+        .from('chapters')
+        .upsert(payload, { onConflict: 'leader_id' });
+      
+      if (error) throw error;
+      
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) { console.error(e); }
@@ -64,9 +82,9 @@ export default function ChapterLeaderDashboard() {
   };
 
   const stats = [
-    { label: 'Chapter Members', value: form.memberCount || '—', icon: '👥' },
+    { label: 'Chapter Members', value: form.member_count || '—', icon: '👥' },
     { label: 'Meetings Held', value: form.meetings || '—', icon: '📅' },
-    { label: 'Projects Completed', value: form.projectsCompleted || '—', icon: '🏆' },
+    { label: 'Projects Completed', value: form.projects_completed || '—', icon: '🏆' },
   ];
 
   return (
@@ -75,7 +93,7 @@ export default function ChapterLeaderDashboard() {
         <motion.div className="db-page-header" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div>
             <p className="db-greeting">Good to see you,</p>
-            <h1 className="db-title">{user?.displayName?.split(' ')[0]} <span className="yellow-text">Chapter</span></h1>
+            <h1 className="db-title">{user?.user_metadata?.full_name?.split(' ')[0]} <span className="yellow-text">Chapter</span></h1>
           </div>
           <span className="db-role-pill db-role-blue">Chapter Leader</span>
         </motion.div>
@@ -113,7 +131,7 @@ export default function ChapterLeaderDashboard() {
               </div>
               <div className="db-field">
                 <label>Active Members</label>
-                <input type="number" min="0" value={form.memberCount} onChange={e => setForm(f => ({ ...f, memberCount: e.target.value }))} placeholder="0" />
+                <input type="number" min="0" value={form.member_count} onChange={e => setForm(f => ({ ...f, member_count: e.target.value }))} placeholder="0" />
               </div>
               <div className="db-field">
                 <label>Meetings Held This Semester</label>
@@ -121,7 +139,7 @@ export default function ChapterLeaderDashboard() {
               </div>
               <div className="db-field">
                 <label>Projects Completed</label>
-                <input type="number" min="0" value={form.projectsCompleted} onChange={e => setForm(f => ({ ...f, projectsCompleted: e.target.value }))} placeholder="0" />
+                <input type="number" min="0" value={form.projects_completed} onChange={e => setForm(f => ({ ...f, projects_completed: e.target.value }))} placeholder="0" />
               </div>
               <div className="db-field db-field-full">
                 <label>Progress Notes</label>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import { useUserAuth } from '../hooks/useUserAuth';
 import DashboardShell from '../components/dashboard/DashboardShell';
 import { Link, useLocation } from 'react-router-dom';
@@ -47,25 +47,34 @@ export default function ApplicationHub() {
 
   const [myApps, setMyApps] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
-  const [form, setForm] = useState({ roleApplied: '', statement: '', projectId: prefill.projectId || '', projectTitle: prefill.projectTitle || '' });
+  const [form, setForm] = useState({ role_applied: '', statement: '', project_id: prefill.projectId || '', project_title: prefill.projectTitle || '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, 'applications'), where('userId', '==', user.uid));
-    const unsub = onSnapshot(q, snap => {
-      setMyApps(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, (err) => {
-      console.error('Applications listener error:', err.code);
-    });
-    return unsub;
+
+    const fetchApplications = async () => {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching applications:', error);
+      } else {
+        setMyApps(data || []);
+      }
+    };
+
+    fetchApplications();
   }, [user]);
 
   const openApplication = (role) => {
     setSelectedRole(role);
-    setForm(f => ({ ...f, roleApplied: role.key }));
+    setForm(f => ({ ...f, role_applied: role.key }));
     setSubmitted(false);
     setSubmitError('');
   };
@@ -75,31 +84,30 @@ export default function ApplicationHub() {
     setSubmitting(true);
     setSubmitError('');
     try {
-      await addDoc(collection(db, 'applications'), {
-        userId: user.uid,
-        userName: user.displayName,
-        userEmail: user.email,
-        roleApplied: form.roleApplied,
-        statement: form.statement,
-        projectId: form.projectId || '',
-        projectTitle: form.projectTitle || '',
-        status: 'pending',
-        createdAt: serverTimestamp(),
-      });
+      const { error } = await supabase
+        .from('applications')
+        .insert({
+          user_id: user.id,
+          user_name: user.user_metadata?.full_name || user.email,
+          user_email: user.email,
+          role_applied: form.role_applied,
+          statement: form.statement,
+          project_id: form.project_id || '',
+          project_title: form.project_title || '',
+          status: 'pending',
+        });
+
+      if (error) throw error;
       setSubmitted(true);
     } catch (e) {
       console.error('Application submit error:', e);
-      if (e.code === 'permission-denied' || e.code === 'PERMISSION_DENIED') {
-        setSubmitError('Permission denied — Firestore rules need updating. Go to Firebase Console → Firestore → Security tab, paste in the firestore.rules file contents, and click Publish.');
-      } else {
-        setSubmitError('Submission failed: ' + (e.message || 'Please try again.'));
-      }
+      setSubmitError('Submission failed: ' + (e.message || 'Please try again.'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const alreadyApplied = (roleKey) => myApps.some(a => a.roleApplied === roleKey && a.status !== 'rejected');
+  const alreadyApplied = (roleKey) => myApps.some(a => a.role_applied === roleKey && a.status !== 'rejected');
 
   const content = (
     <div className="ah-page">
@@ -154,8 +162,8 @@ export default function ApplicationHub() {
             {myApps.map(app => (
               <div key={app.id} className="ah-app-row">
                 <div className="ah-app-info">
-                  <strong>{ROLES.find(r => r.key === app.roleApplied)?.label || app.roleApplied}</strong>
-                  {app.projectTitle && <span className="ah-app-project">Project: {app.projectTitle}</span>}
+                  <strong>{ROLES.find(r => r.key === app.role_applied)?.label || app.role_applied}</strong>
+                  {app.project_title && <span className="ah-app-project">Project: {app.project_title}</span>}
                 </div>
                 <span className={`ah-status-badge ah-status-${app.status}`}>{app.status}</span>
               </div>
@@ -193,7 +201,7 @@ export default function ApplicationHub() {
                       placeholder={`Tell us why you want to be a ${selectedRole.label}, what experience you bring, and what you hope to achieve at Synthica…`}
                     />
                   </div>
-                  <p className="ah-note">Your name ({user?.displayName}) and email ({user?.email}) will be included with your application.</p>
+                  <p className="ah-note">Your name ({user?.user_metadata?.full_name || user?.email}) and email ({user?.email}) will be included with your application.</p>
                   {submitError && (
                     <div className="login-error" style={{ marginTop: '0.5rem' }}>
                       {submitError}

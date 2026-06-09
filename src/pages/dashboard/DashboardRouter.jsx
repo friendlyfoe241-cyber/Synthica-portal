@@ -21,10 +21,10 @@ export default function DashboardRouter() {
   // Not signed in at all → send to login
   if (!user) return <Navigate to="/login" replace />;
 
-  // Signed in but profile couldn't load (Firestore rules issue) → show pending
+  // Signed in but profile couldn't load → show pending
   // with a helpful notice instead of looping back to login
   if (!userProfile) {
-    return <PendingDashboard firestoreError={profileError} />;
+    return <PendingDashboard supabaseError={profileError} />;
   }
 
   switch (userProfile.role) {

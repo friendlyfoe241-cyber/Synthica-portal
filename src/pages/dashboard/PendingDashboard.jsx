@@ -3,29 +3,23 @@ import { motion } from 'framer-motion';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import { useUserAuth } from '../../hooks/useUserAuth';
 
-export default function PendingDashboard({ firestoreError }) {
+export default function PendingDashboard({ supabaseError }) {
   const { user } = useUserAuth();
-  const firstName = user?.displayName?.split(' ')[0] || 'Researcher';
-
-  const hasRulesError = firestoreError &&
-    (firestoreError.includes('permission') ||
-     firestoreError.includes('PERMISSION_DENIED') ||
-     firestoreError.includes('insufficient'));
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Researcher';
 
   return (
     <DashboardShell activeTab="dashboard">
       <div className="db-page">
 
-        {/* Firestore rules error banner */}
-        {hasRulesError && (
+        {/* Supabase error banner */}
+        {supabaseError && (
           <motion.div
             className="db-alert db-alert-warn"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <strong>⚠️ Firestore rules need updating.</strong> Your profile couldn't be saved to the database.
-            Go to <strong>Firebase Console → Firestore → Security tab</strong> and replace the rules with the contents of <code>firestore.rules</code> in your project, then click <strong>Publish</strong>.
-            After that, sign out and sign back in.
+            <strong>⚠️ Database error.</strong> Your profile couldn't be loaded from the database.
+            Please contact an administrator if this persists.
           </motion.div>
         )}
 
@@ -57,7 +51,7 @@ export default function PendingDashboard({ firestoreError }) {
                 <div className="db-step-num active">2</div>
                 <div>
                   <strong>Role Assignment</strong>
-                  <p>An admin sets your role in the Firebase Console</p>
+                  <p>An admin sets your role in Supabase</p>
                 </div>
               </div>
               <div className="db-step">

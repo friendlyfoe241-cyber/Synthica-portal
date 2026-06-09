@@ -1,5 +1,2 @@
-export const supabase = {
-  from: () => ({
-    insert: async () => ({ error: null }),
-  }),
-};
+// Re-export supabase client from supabaseClient.js
+export { supabase } from './supabaseClient';

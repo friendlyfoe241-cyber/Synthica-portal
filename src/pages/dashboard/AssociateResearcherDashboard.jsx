@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from '../../lib/supabaseClient';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import ProjectDetail from '../../components/dashboard/ProjectDetail';
@@ -13,16 +14,23 @@ export default function AssociateResearcherDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    const q = query(
-      collection(db, 'projects'),
-      where('memberIds', 'array-contains', user.uid),
-      orderBy('createdAt', 'desc')
-    );
-    const unsub = onSnapshot(q, (snap) => {
-      setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+    const fetchProjects = async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .contains('member_ids', [user.id])
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching projects:', error);
+      } else {
+        setProjects(data || []);
+      }
       setLoading(false);
-    });
-    return unsub;
+    };
+
+    fetchProjects();
   }, [user]);
 
   if (selectedProject) {
@@ -44,7 +52,7 @@ export default function AssociateResearcherDashboard() {
         <motion.div className="db-page-header" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div>
             <p className="db-greeting">Welcome back,</p>
-            <h1 className="db-title">{user?.displayName?.split(' ')[0]}'s <span className="yellow-text">Projects</span></h1>
+            <h1 className="db-title">{user?.user_metadata?.full_name?.split(' ')[0]}'s <span className="yellow-text">Projects</span></h1>
           </div>
           <span className="db-role-pill db-role-light-blue">Associate Researcher</span>
         </motion.div>
@@ -89,15 +97,15 @@ export default function AssociateResearcherDashboard() {
                   <h3 className="db-project-title">{p.title}</h3>
                   <p className="db-project-desc">{p.description}</p>
                   <div className="db-project-footer">
-                    <span className="db-lead-label">Led by {p.leadResearcherName}</span>
+                    <span className="db-lead-label">Led by {p.lead_researcher_name}</span>
                     <span className="db-project-arrow">Enter →</span>
                   </div>
                   <div className="db-project-team">
-                    {Object.values(p.memberNames || {}).slice(0, 4).map((name, j) => (
+                    {Object.values(p.member_names || {}).slice(0, 4).map((name, j) => (
                       <span key={j} className="db-member-chip">{name.split(' ')[0]}</span>
                     ))}
-                    {Object.keys(p.memberNames || {}).length > 4 && (
-                      <span className="db-member-chip db-member-more">+{Object.keys(p.memberNames).length - 4}</span>
+                    {Object.keys(p.member_names || {}).length > 4 && (
+                      <span className="db-member-chip db-member-more">+{Object.keys(p.member_names).length - 4}</span>
                     )}
                   </div>
                 </motion.div>

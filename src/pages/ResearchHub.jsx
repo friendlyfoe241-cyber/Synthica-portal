@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { db } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 import { useUserAuth } from '../hooks/useUserAuth';
 import DashboardShell from '../components/dashboard/DashboardShell';
 import Meteors from '../components/Meteors';
@@ -21,12 +21,21 @@ export default function ResearchHub() {
   const [applyingTo, setApplyingTo] = useState(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, snap => {
-      setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const fetchProjects = async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching projects:', error);
+      } else {
+        setProjects(data || []);
+      }
       setLoading(false);
-    });
-    return unsub;
+    };
+
+    fetchProjects();
   }, []);
 
   const filtered = projects.filter(p => {
@@ -37,8 +46,8 @@ export default function ResearchHub() {
   });
 
   const isLoggedIn = !!user;
-  const isMember = (p) => p.memberIds?.includes(user?.uid);
-  const isFull = (p) => (p.memberIds?.length || 0) >= (p.maxMembers || 4);
+  const isMember = (p) => p.member_ids?.includes(user?.id);
+  const isFull = (p) => (p.member_ids?.length || 0) >= (p.max_members || 4);
 
   // If logged in, show inside dashboard shell; otherwise show in main site frame
   const content = (
@@ -101,8 +110,8 @@ export default function ResearchHub() {
               <h3 className="rh-card-title">{p.title}</h3>
               <p className="rh-card-desc">{p.description}</p>
               <div className="rh-card-meta">
-                <span>👤 {p.leadResearcherName}</span>
-                <span>👥 {p.memberIds?.length || 0} / {p.maxMembers}</span>
+                <span>👤 {p.lead_researcher_name}</span>
+                <span>👥 {p.member_ids?.length || 0} / {p.max_members}</span>
               </div>
               <div className="rh-card-footer">
                 {!isLoggedIn ? (

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../../lib/supabaseClient';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 
@@ -31,12 +32,21 @@ export default function IndependentResearcherDashboard() {
   const loadProgress = async () => {
     if (!user) return;
     try {
-      const snap = await getDoc(doc(db, 'independentProgress', user.uid));
-      if (snap.exists()) {
-        const d = snap.data();
-        setGoals(d.goals || []);
-        setReadings(d.readings || []);
-        setNotes(d.notes || '');
+      const { data, error } = await supabase
+        .from('independent_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading progress:', error);
+        return;
+      }
+      
+      if (data) {
+        setGoals(data.goals || []);
+        setReadings(data.readings || []);
+        setNotes(data.notes || '');
       }
     } catch (e) { console.error(e); }
   };
@@ -45,12 +55,19 @@ export default function IndependentResearcherDashboard() {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'independentProgress', user.uid), {
+      const payload = {
+        user_id: user.id,
         goals: updatedGoals,
         readings: updatedReadings,
         notes: updatedNotes,
-        updatedAt: serverTimestamp(),
-      });
+      };
+
+      const { error } = await supabase
+        .from('independent_progress')
+        .upsert(payload, { onConflict: 'user_id' });
+      
+      if (error) throw error;
+      
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) { console.error(e); }
@@ -108,7 +125,7 @@ export default function IndependentResearcherDashboard() {
         <motion.div className="db-page-header" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div>
             <p className="db-greeting">Welcome back,</p>
-            <h1 className="db-title">{user?.displayName?.split(' ')[0]}'s <span className="yellow-text">Research</span></h1>
+            <h1 className="db-title">{user?.user_metadata?.full_name?.split(' ')[0]}'s <span className="yellow-text">Research</span></h1>
           </div>
           <span className="db-role-pill db-role-teal">Independent Researcher</span>
         </motion.div>

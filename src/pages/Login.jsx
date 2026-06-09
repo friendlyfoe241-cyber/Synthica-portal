@@ -5,7 +5,7 @@ import { useUserAuth } from '../hooks/useUserAuth';
 import Meteors from '../components/Meteors';
 
 export default function Login() {
-  const { signInWithGoogle, loading, user } = useUserAuth();
+  const { signIn, loading, user } = useUserAuth();
   const [error, setError] = useState('');
   const [signingIn, setSigningIn] = useState(false);
   const navigate = useNavigate();
@@ -21,19 +21,11 @@ export default function Login() {
     try {
       setSigningIn(true);
       setError('');
-      await signInWithGoogle();
-      navigate('/dashboard');
+      await signIn();
+      // Navigation will happen automatically via auth state change
     } catch (err) {
       console.error('Sign-in error:', err);
-      if (err.code === 'auth/unauthorized-domain') {
-        setError(
-          'This domain is not authorized in Firebase. Please add "' +
-          window.location.hostname +
-          '" to Firebase → Authentication → Settings → Authorized Domains.'
-        );
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        // User closed popup, no error needed
-      } else if (err.code === 'auth/popup-blocked') {
+      if (err.message?.includes('popup')) {
         setError('Popup was blocked by your browser. Please allow popups for this site and try again.');
       } else {
         setError('Sign-in failed: ' + (err.message || 'Please try again.'));
@@ -44,7 +36,6 @@ export default function Login() {
   };
 
   // Button should only be disabled while actively signing in
-  // NOT while Firebase is loading — that would freeze the button on bad domains
   const buttonDisabled = signingIn;
 
   return (

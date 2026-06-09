@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  collection, addDoc, getDocs, query, where,
-  doc, updateDoc, deleteDoc, serverTimestamp, orderBy, onSnapshot,
-} from 'firebase/firestore';
+import { supabase } from '../../lib/supabaseClient';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import ProjectDetail from '../../components/dashboard/ProjectDetail';
@@ -20,30 +17,72 @@ export default function LeadResearcherDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, 'projects'), where('leadResearcherId', '==', user.uid), orderBy('createdAt', 'desc'));
-    const unsub = onSnapshot(q, (snap) => {
-      setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return unsub;
+
+    const fetchProjects = async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('lead_researcher_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching projects:', error);
+        return;
+      }
+      setProjects(data || []);
+    };
+
+    fetchProjects();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('projects-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'projects', filter: `lead_researcher_id=eq.${user.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setProjects(prev => [payload.new, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setProjects(prev => prev.map(p => p.id === payload.new.id ? payload.new : p));
+          } else if (payload.eventType === 'DELETE') {
+            setProjects(prev => prev.filter(p => p.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const createProject = async () => {
     if (!newProject.title.trim() || !user) return;
     setCreating(true);
     try {
-      await addDoc(collection(db, 'projects'), {
-        ...newProject,
-        maxMembers: Number(newProject.maxMembers) || 4,
-        leadResearcherId: user.uid,
-        leadResearcherName: user.displayName,
-        memberIds: [user.uid],
-        memberNames: { [user.uid]: user.displayName },
-        status: 'recruiting',
-        createdAt: serverTimestamp(),
-      });
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({
+          title: newProject.title,
+          description: newProject.description,
+          subject: newProject.subject,
+          max_members: Number(newProject.maxMembers) || 4,
+          lead_researcher_id: user.id,
+          lead_researcher_name: user.user_metadata?.full_name || user.email,
+          member_ids: [user.id],
+          member_names: { [user.id]: user.user_metadata?.full_name || user.email },
+          status: 'recruiting',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
       setNewProject({ title: '', description: '', subject: 'Biology', maxMembers: 4 });
       setShowCreateModal(false);
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error('Error creating project:', e); 
+    }
     setCreating(false);
   };
 
@@ -66,7 +105,7 @@ export default function LeadResearcherDashboard() {
         <motion.div className="db-page-header" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div>
             <p className="db-greeting">Good to see you,</p>
-            <h1 className="db-title">{user?.displayName?.split(' ')[0]}'s <span className="yellow-text">Lab</span></h1>
+            <h1 className="db-title">{user?.user_metadata?.full_name?.split(' ')[0]}'s <span className="yellow-text">Lab</span></h1>
           </div>
           <span className="db-role-pill db-role-gold">Lead Researcher</span>
         </motion.div>
@@ -83,7 +122,7 @@ export default function LeadResearcherDashboard() {
           </div>
           <div className="db-stat-card">
             <span className="db-stat-icon">👥</span>
-            <div><p className="db-stat-val">{projects.reduce((s, p) => s + (p.memberIds?.length || 0), 0)}</p><p className="db-stat-label">Total Members</p></div>
+            <div><p className="db-stat-val">{projects.reduce((s, p) => s + (p.member_ids?.length || 0), 0)}</p><p className="db-stat-label">Total Members</p></div>
           </div>
         </div>
 
@@ -117,7 +156,7 @@ export default function LeadResearcherDashboard() {
                 <h3 className="db-project-title">{p.title}</h3>
                 <p className="db-project-desc">{p.description}</p>
                 <div className="db-project-footer">
-                  <span className="db-project-members">👥 {p.memberIds?.length || 0} / {p.maxMembers}</span>
+                  <span className="db-project-members">👥 {p.member_ids?.length || 0} / {p.max_members}</span>
                   <span className="db-project-arrow">Open →</span>
                 </div>
               </motion.div>
