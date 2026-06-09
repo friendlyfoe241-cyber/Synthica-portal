@@ -109,7 +109,12 @@ export default function ApplicationHub() {
 
       setSubmitted(true);
     } catch (e) {
-      console.error('Application submit error:', e);
+      console.error(
+        'Application submit error:',
+        e.code,
+        e.message,
+        e
+      );
 
       if (
         e.code === 'permission-denied' ||

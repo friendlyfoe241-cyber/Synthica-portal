@@ -72,51 +72,63 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchOrCreateProfile = async (firebaseUser) => {
-    if (!firebaseUser) {
-      throw new Error('No firebase user');
+    if (!firebaseUser?.uid) {
+      throw new Error('Missing Firebase user');
     }
 
-    if (!firebaseUser.uid) {
-      throw new Error('Missing user uid');
-    }
+    try {
+      const ref = doc(db, 'users', firebaseUser.uid);
 
-    if (!auth.currentUser) {
-      throw new Error('Auth not ready');
-    }
+      const snap = await getDoc(ref);
 
-    const ref = doc(db, 'users', firebaseUser.uid);
+      if (snap.exists()) {
+        return {
+          uid: firebaseUser.uid,
+          ...snap.data(),
+        };
+      }
 
-    const snap = await getDoc(ref);
+      const newProfile = {
+        displayName:
+          firebaseUser.displayName || 'Unnamed',
 
-    if (snap.exists()) {
+        email:
+          firebaseUser.email || '',
+
+        photoURL:
+          firebaseUser.photoURL || '',
+
+        role: 'pending',
+
+        createdAt:
+          serverTimestamp(),
+      };
+
+      await setDoc(ref, newProfile);
+
       return {
         uid: firebaseUser.uid,
-        ...snap.data()
+        ...newProfile,
+      };
+
+    } catch (err) {
+      console.error(
+        'fetchOrCreateProfile error:',
+        err.code,
+        err.message
+      );
+
+      return {
+        uid: firebaseUser.uid,
+        displayName:
+          firebaseUser.displayName || '',
+        email:
+          firebaseUser.email || '',
+        photoURL:
+          firebaseUser.photoURL || '',
+        role: 'pending',
       };
     }
-
-    const newProfile = {
-      displayName:
-        firebaseUser.displayName || 'Unnamed',
-
-      email:
-        firebaseUser.email || '',
-
-      photoURL:
-        firebaseUser.photoURL || '',
-
-      role: 'pending',
-
-      createdAt:
-        serverTimestamp(),
-    };
-
-    await setDoc(ref, newProfile);
-
-    return {
-      uid: firebaseUser.uid,
-      ...newProfile,
-    };
   };
 
   const signInWithGoogle = async () => {
