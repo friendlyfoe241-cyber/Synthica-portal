@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, addDoc, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../lib/supabaseClient';
 import { useUserAuth } from '../hooks/useUserAuth';
 import DashboardShell from '../components/dashboard/DashboardShell';
 import { Link, useLocation } from 'react-router-dom';

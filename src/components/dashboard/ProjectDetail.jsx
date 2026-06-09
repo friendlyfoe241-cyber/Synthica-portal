@@ -4,7 +4,6 @@ import {
   collection, addDoc, onSnapshot, orderBy, query,
   doc, updateDoc, deleteDoc, serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 import { useUserAuth } from '../../hooks/useUserAuth';
 
 const STATUS_COLS = [

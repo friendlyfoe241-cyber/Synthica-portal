@@ -4,7 +4,6 @@ import {
   collection, addDoc, getDocs, query, where,
   doc, updateDoc, deleteDoc, serverTimestamp, orderBy, onSnapshot,
 } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import ProjectDetail from '../../components/dashboard/ProjectDetail';

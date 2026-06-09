@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { collection, query, where, getDocs, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../lib/supabaseClient';
 import { useUserAuth } from '../hooks/useUserAuth';
 import DashboardShell from '../components/dashboard/DashboardShell';
 import Meteors from '../components/Meteors';

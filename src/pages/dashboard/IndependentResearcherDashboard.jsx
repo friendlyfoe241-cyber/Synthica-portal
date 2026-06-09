@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 
