@@ -51,12 +51,15 @@ export default function ApplicationHub() {
   const [form, setForm] = useState({ roleApplied: '', statement: '', projectId: prefill.projectId || '', projectTitle: prefill.projectTitle || '' });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     if (!user) return;
     const q = query(collection(db, 'applications'), where('userId', '==', user.uid));
     const unsub = onSnapshot(q, snap => {
       setMyApps(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }, (err) => {
+      console.error('Applications listener error:', err.code);
     });
     return unsub;
   }, [user]);
@@ -65,23 +68,36 @@ export default function ApplicationHub() {
     setSelectedRole(role);
     setForm(f => ({ ...f, roleApplied: role.key }));
     setSubmitted(false);
+    setSubmitError('');
   };
 
   const submitApplication = async () => {
     if (!form.statement.trim() || !user) return;
     setSubmitting(true);
+    setSubmitError('');
     try {
       await addDoc(collection(db, 'applications'), {
         userId: user.uid,
         userName: user.displayName,
         userEmail: user.email,
-        ...form,
+        roleApplied: form.roleApplied,
+        statement: form.statement,
+        projectId: form.projectId || '',
+        projectTitle: form.projectTitle || '',
         status: 'pending',
         createdAt: serverTimestamp(),
       });
       setSubmitted(true);
-    } catch (e) { console.error(e); }
-    setSubmitting(false);
+    } catch (e) {
+      console.error('Application submit error:', e);
+      if (e.code === 'permission-denied' || e.code === 'PERMISSION_DENIED') {
+        setSubmitError('Permission denied — Firestore rules need updating. Go to Firebase Console → Firestore → Security tab, paste in the firestore.rules file contents, and click Publish.');
+      } else {
+        setSubmitError('Submission failed: ' + (e.message || 'Please try again.'));
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const alreadyApplied = (roleKey) => myApps.some(a => a.roleApplied === roleKey && a.status !== 'rejected');
@@ -179,6 +195,11 @@ export default function ApplicationHub() {
                     />
                   </div>
                   <p className="ah-note">Your name ({user?.displayName}) and email ({user?.email}) will be included with your application.</p>
+                  {submitError && (
+                    <div className="login-error" style={{ marginTop: '0.5rem' }}>
+                      {submitError}
+                    </div>
+                  )}
                   <div className="db-modal-actions">
                     <button className="db-btn-secondary" onClick={() => setSelectedRole(null)}>Cancel</button>
                     <button className="db-btn-primary" onClick={submitApplication} disabled={submitting || !form.statement.trim()}>
