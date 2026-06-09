@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
         auth,
         async (firebaseUser) => {
           clearTimeout(timeout);
-          if (firebaseUser) {
+          if (firebaseUser?.uid) {
             setUser(firebaseUser);
             try {
               const profile = await fetchOrCreateProfile(firebaseUser);
@@ -72,51 +72,51 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchOrCreateProfile = async (firebaseUser) => {
-    if (!firebaseUser?.uid) {
-      throw new Error('Missing authenticated user');
+    if (!firebaseUser) {
+      throw new Error('No firebase user');
     }
 
-    try {
-      const ref = doc(db, 'users', firebaseUser.uid);
-      const snap = await getDoc(ref);
+    if (!firebaseUser.uid) {
+      throw new Error('Missing user uid');
+    }
 
-      if (snap.exists()) {
-        return {
-          uid: firebaseUser.uid,
-          ...snap.data(),
-        };
-      }
+    if (!auth.currentUser) {
+      throw new Error('Auth not ready');
+    }
 
-      const newProfile = {
-        displayName: firebaseUser.displayName || 'Unnamed',
-        email: firebaseUser.email || '',
-        photoURL: firebaseUser.photoURL || '',
-        role: 'pending',
-        createdAt: serverTimestamp(),
-      };
+    const ref = doc(db, 'users', firebaseUser.uid);
 
-      await setDoc(ref, newProfile);
+    const snap = await getDoc(ref);
 
+    if (snap.exists()) {
       return {
         uid: firebaseUser.uid,
-        ...newProfile,
-      };
-    } catch (err) {
-      console.error(
-        'fetchOrCreateProfile error:',
-        err.code,
-        err.message
-      );
-
-      // Fallback profile so dashboard still works
-      return {
-        uid: firebaseUser.uid,
-        displayName: firebaseUser.displayName || '',
-        email: firebaseUser.email || '',
-        photoURL: firebaseUser.photoURL || '',
-        role: 'pending',
+        ...snap.data()
       };
     }
+
+    const newProfile = {
+      displayName:
+        firebaseUser.displayName || 'Unnamed',
+
+      email:
+        firebaseUser.email || '',
+
+      photoURL:
+        firebaseUser.photoURL || '',
+
+      role: 'pending',
+
+      createdAt:
+        serverTimestamp(),
+    };
+
+    await setDoc(ref, newProfile);
+
+    return {
+      uid: firebaseUser.uid,
+      ...newProfile,
+    };
   };
 
   const signInWithGoogle = async () => {

@@ -65,7 +65,7 @@ const Navbar = () => {
           onMouseEnter={() => handleMouseEnter('community')}
           onMouseLeave={handleMouseLeave}
         >
-          <span className="nav-link-dropdown" style={{ cursor: 'pointer' }}>Community</span>
+          <Link to="/research-hub" className="nav-link-dropdown">Community</Link>
           <ul className="dropdown-menu">
             <li><Link to="/research-hub">Research Hub</Link></li>
             <li><Link to="/application-hub">Application Hub</Link></li>

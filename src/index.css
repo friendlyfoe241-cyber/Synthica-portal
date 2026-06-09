@@ -125,6 +125,7 @@ body {
     cursor: pointer;
     display: flex;
     align-items: center;
+    color: #ffffff;
 }
 
 .dropdown-menu {

@@ -74,6 +74,13 @@ export default function ApplicationHub() {
   const submitApplication = async () => {
     if (!form.statement.trim()) return;
 
+    if (!user?.uid) {
+      setSubmitError(
+        'Authentication is still loading. Please try again.'
+      );
+      return;
+    }
+
     setSubmitting(true);
     setSubmitError('');
 
