@@ -1,23 +1,15 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import {
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import {
-  doc,
-  getDoc,
-  setDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
+import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider, FIREBASE_CONFIGURED } from '../lib/firebase';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser]               = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]         = useState(true);
+  const [profileError, setProfileError] = useState(null);
 
   useEffect(() => {
     if (!FIREBASE_CONFIGURED) {
@@ -25,11 +17,11 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    // Safety timeout — if Firebase hasn't responded in 6s, unblock the UI.
-    // This happens when the domain isn't in Firebase's Authorized Domains list.
+    // Safety net: if Firebase hasn't responded in 8s, unblock the UI
     const timeout = setTimeout(() => {
+      console.warn('Firebase auth timed out — unblocking UI');
       setLoading(false);
-    }, 6000);
+    }, 8000);
 
     let unsubscribe;
     try {
@@ -37,30 +29,38 @@ export function AuthProvider({ children }) {
         auth,
         async (firebaseUser) => {
           clearTimeout(timeout);
-          try {
-            if (firebaseUser) {
-              setUser(firebaseUser);
+          if (firebaseUser) {
+            setUser(firebaseUser);
+            try {
               const profile = await fetchOrCreateProfile(firebaseUser);
               setUserProfile(profile);
-            } else {
-              setUser(null);
-              setUserProfile(null);
+            } catch (err) {
+              console.error('Firestore profile error:', err.code, err.message);
+              setProfileError(err.code || err.message);
+              // Still set a minimal in-memory profile so the dashboard can render
+              setUserProfile({
+                uid: firebaseUser.uid,
+                displayName: firebaseUser.displayName,
+                email: firebaseUser.email,
+                photoURL: firebaseUser.photoURL,
+                role: 'pending',
+              });
             }
-          } catch (e) {
-            console.error('Profile fetch error:', e);
-          } finally {
-            setLoading(false);
+          } else {
+            setUser(null);
+            setUserProfile(null);
+            setProfileError(null);
           }
+          setLoading(false);
         },
-        (error) => {
-          // Auth error (e.g. domain not authorized)
-          console.error('Firebase Auth error:', error);
+        (err) => {
+          console.error('Firebase Auth error:', err.code, err.message);
           clearTimeout(timeout);
           setLoading(false);
         }
       );
-    } catch (e) {
-      console.error('Firebase init error:', e);
+    } catch (err) {
+      console.error('Firebase init error:', err);
       clearTimeout(timeout);
       setLoading(false);
     }
@@ -72,17 +72,18 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchOrCreateProfile = async (firebaseUser) => {
-    const ref = doc(db, 'users', firebaseUser.uid);
+    const ref  = doc(db, 'users', firebaseUser.uid);
     const snap = await getDoc(ref);
     if (snap.exists()) {
       return { uid: firebaseUser.uid, ...snap.data() };
     }
+    // First-time sign-in: create a pending profile
     const newProfile = {
       displayName: firebaseUser.displayName || 'Unnamed',
-      email: firebaseUser.email,
-      photoURL: firebaseUser.photoURL || '',
-      role: 'pending',
-      createdAt: serverTimestamp(),
+      email:       firebaseUser.email,
+      photoURL:    firebaseUser.photoURL || '',
+      role:        'pending',
+      createdAt:   serverTimestamp(),
     };
     await setDoc(ref, newProfile);
     return { uid: firebaseUser.uid, ...newProfile };
@@ -101,15 +102,19 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = async () => {
     if (!user) return;
-    const ref = doc(db, 'users', user.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      setUserProfile({ uid: user.uid, ...snap.data() });
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) setUserProfile({ uid: user.uid, ...snap.data() });
+    } catch (err) {
+      console.error('refreshProfile error:', err);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle, logout, refreshProfile }}>
+    <AuthContext.Provider value={{
+      user, userProfile, loading, profileError,
+      signInWithGoogle, logout, refreshProfile,
+    }}>
       {children}
     </AuthContext.Provider>
   );

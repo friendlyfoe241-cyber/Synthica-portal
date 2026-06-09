@@ -7465,3 +7465,23 @@ a.db-reading-title:hover { color: #2589ed; }
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
 }
+
+/* Alert banners */
+.db-alert {
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.db-alert-warn {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  color: #92680a;
+}
+.db-alert-warn code {
+  background: rgba(0,0,0,0.08);
+  padding: 0.15rem 0.4rem;
+  border-radius: 5px;
+  font-size: 0.8rem;
+}
