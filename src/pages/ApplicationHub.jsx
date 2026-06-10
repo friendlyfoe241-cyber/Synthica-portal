@@ -81,6 +81,10 @@ export default function ApplicationHub() {
 
   const submitApplication = async () => {
     if (!form.statement.trim() || !user) return;
+    if (!user.id) {
+      setSubmitError('User ID not found. Please sign out and sign in again.');
+      return;
+    }
     setSubmitting(true);
     setSubmitError('');
     try {
@@ -92,8 +96,8 @@ export default function ApplicationHub() {
           user_email: user.email,
           role_applied: form.role_applied,
           statement: form.statement,
-          project_id: form.project_id || '',
-          project_title: form.project_title || '',
+          project_id: form.project_id || null,
+          project_title: form.project_title || null,
           status: 'pending',
         });
 
