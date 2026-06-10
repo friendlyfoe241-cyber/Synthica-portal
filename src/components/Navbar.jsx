@@ -20,6 +20,12 @@ const Navbar = () => {
       </Link>
       <ul className="nav-links">
         <li><Link to="/">Home</Link></li>
+        {user && (
+          <>
+            <li><Link to="/research-hub">Research Hub</Link></li>
+            <li><Link to="/application-hub">Application Hub</Link></li>
+          </>
+        )}
       </ul>
       {user ? (
         <Link to="/dashboard" className="join-btn">Dashboard</Link>

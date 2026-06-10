@@ -4,6 +4,8 @@ import Home from "./pages/Home";
 import ScrollToTop from "./components/ScrollToTop";
 import Login from "./pages/Login";
 import DashboardRouter from "./pages/dashboard/DashboardRouter";
+import ResearchHub from "./pages/ResearchHub";
+import ApplicationHub from "./pages/ApplicationHub";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -18,6 +20,22 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardRouter />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/research-hub"
+          element={
+            <ProtectedRoute>
+              <ResearchHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/application-hub"
+          element={
+            <ProtectedRoute>
+              <ApplicationHub />
             </ProtectedRoute>
           }
         />
