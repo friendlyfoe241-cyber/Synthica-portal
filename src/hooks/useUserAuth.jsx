@@ -76,8 +76,14 @@ export function AuthProvider({ children }) {
     setUserProfile(null);
   };
 
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await loadUserProfile(user.id);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, profileError, signIn, logout }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, profileError, signIn, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

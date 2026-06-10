@@ -9,6 +9,9 @@ const ROLES = {
   'independent_researcher': 'Independent Researcher',
 };
 
+// Admin emails - only these users can access the Application Manager
+const ADMIN_EMAILS = ['friendlyfoe241@gmail.com'];
+
 export default function ApplicationManager() {
   const { user } = useUserAuth();
   const [applications, setApplications] = useState([]);
@@ -96,8 +99,8 @@ export default function ApplicationManager() {
     });
   };
 
-  const pendingApps = applications.filter(a => a.status === 'pending');
-  const processedApps = applications.filter(a => a.status !== 'pending');
+  // Only show processed apps if they exist in current session
+  const [processedCount, setProcessedCount] = useState(0);
 
   if (!user) {
     return (
@@ -106,6 +109,20 @@ export default function ApplicationManager() {
       </div>
     );
   }
+
+  // Check if user is an admin
+  const isAdmin = ADMIN_EMAILS.includes(user.email);
+
+  if (!isAdmin) {
+    return (
+      <div style={{ padding: '4rem', textAlign: 'center' }}>
+        <h2>Access Denied</h2>
+        <p style={{ color: '#6B7280' }}>You do not have permission to view this page.</p>
+      </div>
+    );
+  }
+
+  const pendingApps = applications.filter(a => a.status === 'pending');
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
@@ -216,51 +233,6 @@ export default function ApplicationManager() {
               </div>
             )}
           </section>
-
-          {/* Processed Applications */}
-          {processedApps.length > 0 && (
-            <section>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem', color: '#6B7280' }}>
-                Processed Applications ({processedApps.length})
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {processedApps.map(app => (
-                  <div key={app.id} style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '1rem',
-                    background: 'white',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
-                    fontSize: '0.875rem'
-                  }}>
-                    <div>
-                      <strong>{app.user_name}</strong>
-                      <span style={{ color: '#6B7280', marginLeft: '0.5rem' }}>
-                        ({ROLES[app.role_applied] || app.role_applied})
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem',
-                        fontWeight: '600',
-                        background: app.status === 'approved' ? '#dcfce7' : '#fee2e2',
-                        color: app.status === 'approved' ? '#16a34a' : '#EF4444'
-                      }}>
-                        {app.status}
-                      </span>
-                      <span style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>
-                        {formatDate(app.created_at)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
         </>
       )}
     </div>

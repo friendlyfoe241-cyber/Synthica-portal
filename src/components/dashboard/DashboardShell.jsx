@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUserAuth } from '../../hooks/useUserAuth';
+import { supabase } from '../../lib/supabaseClient';
 
 const ROLE_LABELS = {
   chapter_leader: 'Chapter Leader',
@@ -19,13 +20,35 @@ const ROLE_COLORS = {
 };
 
 export default function DashboardShell({ children, activeTab }) {
-  const { user, userProfile, logout } = useUserAuth();
+  const { user, userProfile, logout, refreshProfile } = useUserAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [switchingRole, setSwitchingRole] = useState(false);
+  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/');
+  };
+
+  const handleRoleSwitch = async (newRole) => {
+    if (!user || switchingRole) return;
+    setSwitchingRole(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      await refreshProfile();
+      setShowRoleSwitcher(false);
+    } catch (err) {
+      console.error('Error switching role:', err);
+      alert('Failed to switch role');
+    } finally {
+      setSwitchingRole(false);
+    }
   };
 
   const role = userProfile?.role || 'pending';
@@ -50,9 +73,61 @@ export default function DashboardShell({ children, activeTab }) {
             />
             <div className="ds-user-info">
               <p className="ds-user-name">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Researcher'}</p>
-              <span className="ds-role-badge" style={{ background: `${roleColor}22`, color: roleColor, border: `1px solid ${roleColor}44` }}>
-                {roleLabel}
-              </span>
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
+                  className="ds-role-badge"
+                  style={{ 
+                    background: `${roleColor}22`, 
+                    color: roleColor, 
+                    border: `1px solid ${roleColor}44`,
+                    cursor: 'pointer',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '6px',
+                    fontSize: '0.7rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  {roleLabel} ▼
+                </button>
+                {showRoleSwitcher && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    marginTop: '0.5rem',
+                    background: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    zIndex: 1000,
+                    minWidth: '160px',
+                    overflow: 'hidden'
+                  }}>
+                    {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                      <button
+                        key={key}
+                        onClick={() => handleRoleSwitch(key)}
+                        disabled={switchingRole || key === role}
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          padding: '0.75rem 1rem',
+                          textAlign: 'left',
+                          background: key === role ? `${ROLE_COLORS[key]}22` : 'transparent',
+                          color: ROLE_COLORS[key],
+                          border: 'none',
+                          cursor: key === role ? 'default' : 'pointer',
+                          fontWeight: key === role ? '700' : '500',
+                          fontSize: '0.8rem',
+                          opacity: key === role ? 1 : 0.8
+                        }}
+                      >
+                        {label} {key === role && '✓'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
