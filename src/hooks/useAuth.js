@@ -1,38 +1,38 @@
 import { useState, useEffect } from 'react';
-
-const AUTH_KEY = 'synthica_auth';
+import { supabase } from '../lib/supabase';
 
 export function useAuth() {
-  const [staff, setStaff] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem(AUTH_KEY);
-    if (stored) {
-      try {
-        setStaff(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem(AUTH_KEY);
-      }
-    }
-    setLoading(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (password) => {
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-    if (password === adminPassword) {
-      const authData = { loggedIn: true, timestamp: Date.now() };
-      localStorage.setItem(AUTH_KEY, JSON.stringify(authData));
-      setStaff(authData);
-      return true;
-    }
-    return false;
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return data;
   };
 
-  const logout = () => {
-    localStorage.removeItem(AUTH_KEY);
-    setStaff(null);
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
-  return { staff, loading, login, logout };
+  return { user, loading, signIn, signOut };
 }
