@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import DashboardRouter from "./pages/dashboard/DashboardRouter";
 import ResearchHub from "./pages/ResearchHub";
 import ApplicationHub from "./pages/ApplicationHub";
+import ApplicationManager from "./pages/ApplicationManager";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -36,6 +37,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ApplicationHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/applications"
+          element={
+            <ProtectedRoute>
+              <ApplicationManager />
             </ProtectedRoute>
           }
         />

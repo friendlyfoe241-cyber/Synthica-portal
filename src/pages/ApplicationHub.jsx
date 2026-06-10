@@ -103,6 +103,14 @@ export default function ApplicationHub() {
 
       if (error) throw error;
       setSubmitted(true);
+      
+      // Refresh the applications list to show "My Applications"
+      const { data } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      setMyApps(data || []);
     } catch (e) {
       console.error('Application submit error:', e);
       setSubmitError('Submission failed: ' + (e.message || 'Please try again.'));
