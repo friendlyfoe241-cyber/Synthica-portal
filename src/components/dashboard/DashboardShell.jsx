@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import { supabase } from '../../lib/supabaseClient';
@@ -8,7 +8,6 @@ const ROLE_LABELS = {
   lead_researcher: 'Lead Researcher',
   associate_researcher: 'Associate Researcher',
   independent_researcher: 'Independent Researcher',
-  pending: 'Pending',
 };
 
 const ROLE_COLORS = {
@@ -16,7 +15,6 @@ const ROLE_COLORS = {
   lead_researcher: '#FFD700',
   associate_researcher: '#78b4fb',
   independent_researcher: '#69aaec',
-  pending: '#6B7280',
 };
 
 // Admin emails - only these users can access the Application Manager
@@ -28,8 +26,30 @@ export default function DashboardShell({ children, activeTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [switchingRole, setSwitchingRole] = useState(false);
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
+  const [approvedRoles, setApprovedRoles] = useState([]);
 
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+
+  // Fetch approved applications to get available roles
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchApprovedRoles = async () => {
+      const { data, error } = await supabase
+        .from('applications')
+        .select('role_applied')
+        .eq('user_id', user.id)
+        .eq('status', 'approved');
+
+      if (!error && data) {
+        // Get unique roles
+        const uniqueRoles = [...new Set(data.map(app => app.role_applied))];
+        setApprovedRoles(uniqueRoles);
+      }
+    };
+
+    fetchApprovedRoles();
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -56,9 +76,9 @@ export default function DashboardShell({ children, activeTab }) {
     }
   };
 
-  const role = userProfile?.role || 'pending';
-  const roleLabel = ROLE_LABELS[role];
-  const roleColor = ROLE_COLORS[role];
+  const role = userProfile?.role || (approvedRoles[0]) || null;
+  const roleLabel = role ? ROLE_LABELS[role] : 'No Role';
+  const roleColor = role ? ROLE_COLORS[role] : '#6B7280';
 
   return (
     <div className="ds-layout">
@@ -78,61 +98,68 @@ export default function DashboardShell({ children, activeTab }) {
             />
             <div className="ds-user-info">
               <p className="ds-user-name">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Researcher'}</p>
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-                  className="ds-role-badge"
-                  style={{ 
-                    background: `${roleColor}22`, 
-                    color: roleColor, 
-                    border: `1px solid ${roleColor}44`,
-                    cursor: 'pointer',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '6px',
-                    fontSize: '0.7rem',
-                    fontWeight: '600'
-                  }}
-                >
-                  {roleLabel} ▼
-                </button>
-                {showRoleSwitcher && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    marginTop: '0.5rem',
-                    background: 'white',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                    zIndex: 1000,
-                    minWidth: '160px',
-                    overflow: 'hidden'
-                  }}>
-                    {Object.entries(ROLE_LABELS).map(([key, label]) => (
-                      <button
-                        key={key}
-                        onClick={() => handleRoleSwitch(key)}
-                        disabled={switchingRole || key === role}
-                        style={{
-                          display: 'block',
-                          width: '100%',
-                          padding: '0.75rem 1rem',
-                          textAlign: 'left',
-                          background: key === role ? `${ROLE_COLORS[key]}22` : 'transparent',
-                          color: ROLE_COLORS[key],
-                          border: 'none',
-                          cursor: key === role ? 'default' : 'pointer',
-                          fontWeight: key === role ? '700' : '500',
-                          fontSize: '0.8rem',
-                          opacity: key === role ? 1 : 0.8
-                        }}
-                      >
-                        {label} {key === role && '✓'}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {approvedRoles.length > 0 && (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
+                    className="ds-role-badge"
+                    style={{ 
+                      background: `${roleColor}22`, 
+                      color: roleColor, 
+                      border: `1px solid ${roleColor}44`,
+                      cursor: 'pointer',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '6px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {roleLabel} {approvedRoles.length > 1 && '▼'}
+                  </button>
+                  {showRoleSwitcher && approvedRoles.length > 1 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: '0.5rem',
+                      background: 'white',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                      zIndex: 1000,
+                      minWidth: '160px',
+                      overflow: 'hidden'
+                    }}>
+                      {approvedRoles.map((roleKey) => (
+                        <button
+                          key={roleKey}
+                          onClick={() => handleRoleSwitch(roleKey)}
+                          disabled={switchingRole || roleKey === role}
+                          style={{
+                            display: 'block',
+                            width: '100%',
+                            padding: '0.75rem 1rem',
+                            textAlign: 'left',
+                            background: roleKey === role ? `${ROLE_COLORS[roleKey]}22` : 'transparent',
+                            color: ROLE_COLORS[roleKey],
+                            border: 'none',
+                            cursor: roleKey === role ? 'default' : 'pointer',
+                            fontWeight: roleKey === role ? '700' : '500',
+                            fontSize: '0.8rem',
+                            opacity: roleKey === role ? 1 : 0.8
+                          }}
+                        >
+                          {ROLE_LABELS[roleKey]} {roleKey === role && '✓'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {approvedRoles.length === 0 && (
+                <span className="ds-role-badge" style={{ background: '#f1f5f9', color: '#6B7280', border: '1px solid #e2e8f0' }}>
+                  No Role
+                </span>
+              )}
             </div>
           </div>
         </div>
