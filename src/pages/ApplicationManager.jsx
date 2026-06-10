@@ -76,7 +76,8 @@ export default function ApplicationManager() {
 
       if (profileError) throw profileError;
 
-      fetchApplications();
+      // Remove this application from the local state immediately
+      setApplications(prev => prev.filter(a => a.id !== app.id));
       alert('Application approved! User role has been updated.');
     } catch (err) {
       console.error('Error approving application:', err);
@@ -88,7 +89,22 @@ export default function ApplicationManager() {
 
   const rejectApplication = async (id) => {
     if (!window.confirm('Reject this application?')) return;
-    await updateApplication(id, 'rejected');
+    setUpdating(id);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ status: 'rejected' })
+        .eq('id', id);
+
+      if (error) throw error;
+      // Remove this application from the local state immediately
+      setApplications(prev => prev.filter(a => a.id !== id));
+    } catch (err) {
+      console.error('Error rejecting application:', err);
+      alert('Failed to reject application: ' + err.message);
+    } finally {
+      setUpdating(null);
+    }
   };
 
   const formatDate = (dateStr) => {

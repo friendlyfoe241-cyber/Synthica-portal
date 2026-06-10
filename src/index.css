@@ -742,46 +742,48 @@ body {
 
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    margin: 0 auto;
-    width: 48vw;
-}
-
-.feature-card:nth-child(1) {
-    padding: 1.5rem 4rem 1.5rem 4rem;
-    width: 30vw;
-    justify-self: start;
-}
-
-.feature-card:nth-child(2) {
-    width: 17vw;
-    justify-self: end;
-}
-
-.feature-card:nth-child(3) {
-    width: 17vw;
-    justify-self: start;
-}
-
-.feature-card:nth-child(4) {
-    width: 30vw;
-    justify-self: end;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 900px;
 }
 
 .feature-card {
-    background: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 24px;
-    padding: 1.5rem;
-    height: 17vw;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     text-align: center;
+    gap: 1rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(37, 137, 237, 0.15);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.feature-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.feature-desc {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
 }
 
 .feature-card-with-preview {
@@ -1748,7 +1750,6 @@ body {
         font-size: 1.75rem;
     }
 
-
     .platform-subtitle {
         font-size: 1rem;
     }
@@ -1756,73 +1757,16 @@ body {
     .features-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
-    }
-
-    .features-grid {
-        grid-template-columns: 1fr;
-        width: 100%;
-    }
-
-    .feature-card:nth-child(1),
-    .feature-card:nth-child(2),
-    .feature-card:nth-child(3),
-    .feature-card:nth-child(4) {
-        width: 100% !important;
-        justify-self: stretch !important;
+        padding: 0 1rem;
     }
 
     .feature-card {
-        padding: 1.25rem;
-        height: auto;
-        min-height: 200px;
+        min-height: auto;
+        padding: 1.5rem;
     }
 
-    .feature-card-with-preview {
-        height: auto;
-        min-height: 350px;
-        padding: 1.5rem 1.25rem 2rem;
-        overflow: visible;
-    }
-
-    .mini-preview {
-        width: 98%;
-        transform: rotateX(12deg) translateY(0);
-        margin-bottom: 0;
-        margin-left: 1%;
-    }
-
-    .feature-card-description {
-        margin-bottom: 1.5rem;
-    }
-
-    .people-images-grid {
-        flex-direction: row;
-        gap: 0.5rem;
-        justify-content: center;
-        margin-bottom: 1rem;
-    }
-
-    .people-image {
-        width: 30%;
-        max-width: 100px;
-    }
-
-    .people-image:nth-child(2),
-    .people-image:nth-child(3) {
-        display: block;
-    }
-
-    .stat-number {
+    .feature-icon {
         font-size: 2.5rem;
-        margin: 0.5rem 0;
-    }
-
-    .feature-description {
-        font-size: 0.875rem;
-    }
-
-    .mini-preview .preview-nav {
-        display: none;
     }
 
     .mini-preview .preview-stats {
@@ -2158,52 +2102,23 @@ body {
     .features-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
-        width: 100%;
-    }
-
-    .feature-card:nth-child(1),
-    .feature-card:nth-child(2),
-    .feature-card:nth-child(3),
-    .feature-card:nth-child(4) {
-        width: 100% !important;
-        justify-self: stretch !important;
+        padding: 0 1rem;
     }
 
     .feature-card {
-        height: auto;
-        min-height: 220px;
+        min-height: auto;
     }
 
-    .feature-card-with-preview {
-        height: auto;
-        min-height: 380px;
-        padding: 1.5rem 1.5rem 2rem;
-        overflow: visible;
+    .feature-icon {
+        font-size: 2.5rem;
     }
 
-    .mini-preview {
-        width: 98%;
-        transform: rotateX(18deg) translateY(0);
-        margin-bottom: 0;
-        margin-left: 1%;
+    .feature-title {
+        font-size: 1rem;
     }
 
-    .people-image {
-        width: 32%;
-        max-width: 120px;
-    }
-
-    .stat-number {
-        font-size: 3rem;
-        margin: 0.5rem 0;
-    }
-
-    .mini-preview .preview-nav {
-        display: flex;
-    }
-
-    .feature-card-description {
-        font-size: 0.8rem;
+    .feature-desc {
+        font-size: 0.85rem;
     }
 
     .curriculum-title {
@@ -2343,24 +2258,9 @@ body {
     }
 
     .features-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        width: 70vw;
-    }
-
-    .feature-card:nth-child(1) {
-        width: 28vw;
-    }
-
-    .feature-card:nth-child(2) {
-        width: 17vw;
-    }
-
-    .feature-card:nth-child(3) {
-        width: 17vw;
-    }
-
-    .feature-card:nth-child(4) {
-        width: 28vw;
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 900px;
+        width: 100%;
     }
 
     .stat-number {
@@ -2446,24 +2346,9 @@ body {
     }
 
     .features-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        width: 48vw;
-    }
-
-    .feature-card:nth-child(1) {
-        width: 29vw;
-    }
-
-    .feature-card:nth-child(2) {
-        width: 17vw;
-    }
-
-    .feature-card:nth-child(3) {
-        width: 17vw;
-    }
-
-    .feature-card:nth-child(4) {
-        width: 29vw;
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 900px;
+        width: 100%;
     }
 
     .stat-number {

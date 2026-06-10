@@ -19,12 +19,17 @@ const ROLE_COLORS = {
   pending: '#6B7280',
 };
 
+// Admin emails - only these users can access the Application Manager
+const ADMIN_EMAILS = ['friendlyfoe241@gmail.com'];
+
 export default function DashboardShell({ children, activeTab }) {
   const { user, userProfile, logout, refreshProfile } = useUserAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [switchingRole, setSwitchingRole] = useState(false);
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
+
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   const handleLogout = async () => {
     await logout();
@@ -142,9 +147,11 @@ export default function DashboardShell({ children, activeTab }) {
           <Link to="/application-hub" className={`ds-nav-item ${activeTab === 'application-hub' ? 'active' : ''}`}>
             <AppIcon /> Application Hub
           </Link>
-          <Link to="/admin/applications" className={`ds-nav-item ${activeTab === 'admin' ? 'active' : ''}`}>
-            <AdminIcon /> Approve Applications
-          </Link>
+          {isAdmin && (
+            <Link to="/admin/applications" className={`ds-nav-item ${activeTab === 'admin' ? 'active' : ''}`}>
+              <AdminIcon /> Approve Applications
+            </Link>
+          )}
           <Link to="/" className="ds-nav-item">
             <GlobeIcon /> Main Website
           </Link>
