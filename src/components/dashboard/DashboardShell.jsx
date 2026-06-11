@@ -58,12 +58,20 @@ export default function DashboardShell({ children, activeTab }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch approved applications to get available roles
+  // Fetch approved roles from profile's roles array
   useEffect(() => {
-    if (!user) return;
+    if (!user || !userProfile) return;
 
+    // Use roles from profile if available, otherwise check applications
     const fetchApprovedRoles = async () => {
       try {
+        // First check if profile has roles array
+        if (userProfile?.roles && Array.isArray(userProfile.roles) && userProfile.roles.length > 0) {
+          setApprovedRoles(userProfile.roles);
+          return;
+        }
+
+        // Fallback: query approved applications
         const { data, error } = await supabase
           .from('applications')
           .select('role_applied')
@@ -73,14 +81,21 @@ export default function DashboardShell({ children, activeTab }) {
         if (!error && data) {
           const uniqueRoles = [...new Set(data.map(app => app.role_applied))];
           setApprovedRoles(uniqueRoles);
+        } else if (userProfile?.role) {
+          // Fallback to single role field
+          setApprovedRoles([userProfile.role]);
         }
       } catch (err) {
         console.error('Error fetching approved roles:', err);
+        // Fallback to single role field
+        if (userProfile?.role) {
+          setApprovedRoles([userProfile.role]);
+        }
       }
     };
 
     fetchApprovedRoles();
-  }, [user]);
+  }, [user, userProfile]);
 
   const handleLogout = async () => {
     await logout();
@@ -91,13 +106,26 @@ export default function DashboardShell({ children, activeTab }) {
     if (!user || switchingRole) return;
     setSwitchingRole(true);
     try {
+      // Update the active role (keeps all roles in the array)
       const { error } = await supabase
         .from('profiles')
-        .update({ role: newRole })
+        .update({ 
+          role: newRole,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user.id);
 
       if (error) throw error;
       await refreshProfile();
+      
+      // Update local state to reflect the change
+      setApprovedRoles(prev => {
+        if (!prev.includes(newRole)) {
+          return [...prev, newRole];
+        }
+        return prev;
+      });
+      
       setShowRoleSwitcher(false);
     } catch (err) {
       console.error('Error switching role:', err);

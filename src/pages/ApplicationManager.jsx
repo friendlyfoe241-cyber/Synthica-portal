@@ -60,48 +60,85 @@ export default function ApplicationManager() {
 
     setUpdating(app.id);
     try {
-      // Update application status
+      // Update application status in database
       const { error: appError } = await supabase
         .from('applications')
-        .update({ status: 'approved' })
+        .update({ status: 'approved', updated_at: new Date().toISOString() })
         .eq('id', app.id);
 
-      if (appError) throw appError;
+      if (appError) {
+        console.error('Application update error:', appError);
+        throw appError;
+      }
 
-      // Update user's profile with their role
-      const { error: profileError } = await supabase
+      // Add role to user's profile (as array element)
+      // First, get the current roles
+      const { data: currentProfile, error: fetchError } = await supabase
         .from('profiles')
-        .update({ role: app.role_applied })
-        .eq('id', app.user_id);
+        .select('roles, role')
+        .eq('id', app.user_id)
+        .single();
 
-      if (profileError) throw profileError;
+      if (fetchError) {
+        console.error('Fetch profile error:', fetchError);
+        throw fetchError;
+      }
 
-      // Remove this application from the local state immediately
+      // Get current roles array or create new one
+      let currentRoles = currentProfile?.roles || [];
+      if (!Array.isArray(currentRoles)) {
+        currentRoles = currentProfile?.role ? [currentProfile.role] : [];
+      }
+
+      // Add the new role if not already present
+      if (!currentRoles.includes(app.role_applied)) {
+        const newRoles = [...currentRoles, app.role_applied];
+        
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            roles: newRoles,
+            role: app.role_applied, // Keep backwards compatible single role
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', app.user_id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+          throw profileError;
+        }
+      }
+
+      // Remove this application from the local state
       setApplications(prev => prev.filter(a => a.id !== app.id));
-      alert('Application approved! User role has been updated.');
+      alert('Application approved! User has been assigned the role.');
     } catch (err) {
       console.error('Error approving application:', err);
-      alert('Failed to approve application: ' + err.message);
+      alert('Failed to approve application: ' + (err.message || 'Unknown error'));
     } finally {
       setUpdating(null);
     }
   };
 
-  const rejectApplication = async (id) => {
+  const rejectApplication = async (app) => {
     if (!window.confirm('Reject this application?')) return;
-    setUpdating(id);
+    setUpdating(app.id);
     try {
       const { error } = await supabase
         .from('applications')
-        .update({ status: 'rejected' })
-        .eq('id', id);
+        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+        .eq('id', app.id);
 
-      if (error) throw error;
-      // Remove this application from the local state immediately
-      setApplications(prev => prev.filter(a => a.id !== id));
+      if (error) {
+        console.error('Reject error:', error);
+        throw error;
+      }
+
+      // Remove this application from the local state
+      setApplications(prev => prev.filter(a => a.id !== app.id));
     } catch (err) {
       console.error('Error rejecting application:', err);
-      alert('Failed to reject application: ' + err.message);
+      alert('Failed to reject application: ' + (err.message || 'Unknown error'));
     } finally {
       setUpdating(null);
     }
@@ -213,7 +250,7 @@ export default function ApplicationManager() {
                       </span>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button
-                          onClick={() => rejectApplication(app.id)}
+                          onClick={() => rejectApplication(app)}
                           disabled={updating === app.id}
                           style={{
                             padding: '0.5rem 1rem',
