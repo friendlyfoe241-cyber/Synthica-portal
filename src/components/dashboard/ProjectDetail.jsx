@@ -123,6 +123,14 @@ export default function ProjectDetail({ project, isLead, onBack }) {
         })
         .eq('id', project.id);
 
+      // Mark notification as read
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('type', 'project_application')
+        .eq('is_read', false);
+
       // Update local state
       setApplications(prev => prev.map(a => a.id === applicationId ? { ...a, status: 'approved' } : a));
     } catch (err) {
@@ -139,6 +147,15 @@ export default function ProjectDetail({ project, isLead, onBack }) {
         .eq('id', applicationId);
 
       if (error) throw error;
+
+      // Mark notification as read
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('type', 'project_application')
+        .eq('is_read', false);
+
       setApplications(prev => prev.map(a => a.id === applicationId ? { ...a, status: 'rejected' } : a));
     } catch (err) {
       console.error('Error rejecting application:', err);

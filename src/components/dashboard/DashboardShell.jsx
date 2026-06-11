@@ -124,7 +124,7 @@ export default function DashboardShell({ children, activeTab }) {
 
     fetchNotifications();
 
-    // Subscribe to new notifications
+    // Subscribe to notification changes
     const channel = supabase
       .channel('notifications-changes')
       .on('postgres_changes', {
@@ -135,6 +135,17 @@ export default function DashboardShell({ children, activeTab }) {
       }, (payload) => {
         setNotifications(prev => [payload.new, ...prev]);
         setUnreadCount(prev => prev + 1);
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+        if (payload.new.is_read) {
+          setNotifications(prev => prev.filter(n => n.id !== payload.new.id));
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
       })
       .subscribe();
 
