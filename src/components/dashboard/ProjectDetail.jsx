@@ -53,6 +53,9 @@ export default function ProjectDetail({ project, isLead, onBack }) {
 
       // Fetch project applications (only for lead researcher)
       if (isLead) {
+        console.log('Fetching applications for project:', projectId);
+        console.log('isLead is:', isLead);
+        
         const { data: applicationsData, error: appsError } = await supabase
           .from('project_applications')
           .select('*, profiles(full_name, institution)')
