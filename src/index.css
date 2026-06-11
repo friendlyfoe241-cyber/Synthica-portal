@@ -6471,11 +6471,22 @@ body {
   display: flex;
   flex-direction: column;
   padding: 1.5rem 0;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  bottom: 0;
   height: 100vh;
   overflow-y: auto;
   z-index: 50;
+}
+
+/* Main content area */
+.ds-main {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 .ds-sidebar-top { padding: 0 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
 .ds-brand {
@@ -7320,7 +7331,7 @@ a.db-reading-title:hover { color: #2589ed; }
 
 @media (max-width: 768px) {
   .ds-sidebar {
-    position: fixed; left: -280px; top: 0;
+    position: fixed; left: -280px; top: 0; bottom: 0;
     transition: left 0.3s ease;
     z-index: 55;
     box-shadow: 4px 0 20px rgba(0,0,0,0.1);
@@ -7328,7 +7339,10 @@ a.db-reading-title:hover { color: #2589ed; }
   .ds-sidebar.ds-sidebar-open { left: 0; }
   .ds-mobile-header { display: flex; }
   .ds-overlay { display: block; }
-  .ds-main { padding-top: 64px; }
+  .ds-main { 
+    padding-top: 64px; 
+    margin-left: 0;
+  }
   .db-page { padding: 1.5rem 1rem; }
   .db-title { font-size: 1.75rem; }
   .rh-title { font-size: 2rem; }
