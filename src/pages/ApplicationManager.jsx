@@ -13,7 +13,7 @@ const ROLES = {
 const ADMIN_EMAILS = ['friendlyfoe241@gmail.com'];
 
 export default function ApplicationManager() {
-  const { user } = useUserAuth();
+  const { user, refreshProfile } = useUserAuth();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
@@ -57,7 +57,7 @@ export default function ApplicationManager() {
     setError(null);
     
     try {
-      // Hard-coded: Update status to 'approved' directly in the database
+      // 1. Update application status to 'approved'
       const { data, error } = await supabase
         .from('applications')
         .update({ 
@@ -72,14 +72,46 @@ export default function ApplicationManager() {
         console.error('Supabase update error:', error);
         setError('Failed to update: ' + error.message);
         alert('Failed to approve application. Error: ' + error.message);
-      } else {
-        console.log('Application approved in DB:', data);
-        // Update local state to reflect the change
-        setApplications(prev => prev.map(a => 
-          a.id === app.id ? { ...a, status: 'approved' } : a
-        ));
-        alert('Application approved! Status changed to approved.');
+        return;
       }
+
+      // 2. Update profiles table to add the role to user's roles array
+      const roleKey = app.role_applied;
+      
+      // First get the current profile to see existing roles
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('roles')
+        .eq('id', app.user_id)
+        .single();
+      
+      const currentRoles = profileData?.roles || [];
+      
+      // Add the new role if not already present
+      if (!currentRoles.includes(roleKey)) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            roles: [...currentRoles, roleKey],
+            status: 'approved',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', app.user_id);
+        
+        if (profileError) {
+          console.error('Failed to update profile roles:', profileError);
+        } else {
+          // Refresh the user's profile so they get the new role immediately
+          await refreshProfile();
+        }
+      }
+
+      console.log('Application approved in DB:', data);
+      // Update local state to reflect the change
+      setApplications(prev => prev.map(a => 
+        a.id === app.id ? { ...a, status: 'approved' } : a
+      ));
+      alert('Application approved! Status changed to approved.');
     } catch (err) {
       console.error('Error approving application:', err);
       setError('Error: ' + err.message);
