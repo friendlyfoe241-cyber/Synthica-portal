@@ -17,28 +17,35 @@ export default function ApplicationManager() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
-  const [activeTab, setActiveTab] = useState('pending'); // pending, approved, rejected, all
+  const [activeTab, setActiveTab] = useState('pending');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchApplications();
+    fetchAllApplications();
   }, []);
 
-  const fetchApplications = async () => {
+  const fetchAllApplications = async () => {
     setLoading(true);
+    setError(null);
     try {
-      // Fetch all applications without filtering (admin has full access)
+      // Fetch ALL applications from the database - no filtering by user
       const { data, error } = await supabase
         .from('applications')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching applications:', error);
+        console.error('Supabase fetch error:', error);
+        setError('Failed to fetch applications: ' + error.message);
+        setApplications([]);
       } else {
+        console.log('Fetched applications:', data?.length || 0);
         setApplications(data || []);
       }
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error fetching applications:', err);
+      setError('Error: ' + err.message);
+      setApplications([]);
     }
     setLoading(false);
   };
@@ -47,61 +54,36 @@ export default function ApplicationManager() {
     if (!window.confirm(`Approve this application for ${ROLES[app.role_applied]}?`)) return;
 
     setUpdating(app.id);
+    setError(null);
+    
     try {
-      // Update application status in database
-      const { error: appError } = await supabase
+      // Hard-coded: Update status to 'approved' directly in the database
+      const { data, error } = await supabase
         .from('applications')
-        .update({ status: 'approved', updated_at: new Date().toISOString() })
-        .eq('id', app.id);
-
-      if (appError) {
-        console.error('Application update error:', appError);
-        throw appError;
-      }
-
-      // Add role to user's profile
-      const { data: currentProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('roles, role')
-        .eq('id', app.user_id)
+        .update({ 
+          status: 'approved',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', app.id)
+        .select()
         .single();
 
-      if (fetchError) {
-        console.error('Fetch profile error:', fetchError);
-        throw fetchError;
+      if (error) {
+        console.error('Supabase update error:', error);
+        setError('Failed to update: ' + error.message);
+        alert('Failed to approve application. Error: ' + error.message);
+      } else {
+        console.log('Application approved in DB:', data);
+        // Update local state to reflect the change
+        setApplications(prev => prev.map(a => 
+          a.id === app.id ? { ...a, status: 'approved' } : a
+        ));
+        alert('Application approved! Status changed to approved.');
       }
-
-      // Get current roles array or create new one
-      let currentRoles = currentProfile?.roles || [];
-      if (!Array.isArray(currentRoles)) {
-        currentRoles = currentProfile?.role ? [currentProfile.role] : [];
-      }
-
-      // Add the new role if not already present
-      if (!currentRoles.includes(app.role_applied)) {
-        const newRoles = [...currentRoles, app.role_applied];
-        
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ 
-            roles: newRoles,
-            role: app.role_applied,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', app.user_id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-          throw profileError;
-        }
-      }
-
-      // Update local state
-      setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'approved' } : a));
-      alert('Application approved! User has been assigned the role.');
     } catch (err) {
       console.error('Error approving application:', err);
-      alert('Failed to approve application: ' + (err.message || 'Unknown error'));
+      setError('Error: ' + err.message);
+      alert('Failed to approve application: ' + err.message);
     } finally {
       setUpdating(null);
     }
@@ -109,23 +91,37 @@ export default function ApplicationManager() {
 
   const rejectApplication = async (app) => {
     if (!window.confirm('Reject this application?')) return;
+
     setUpdating(app.id);
+    setError(null);
+    
     try {
-      const { error } = await supabase
+      // Hard-coded: Update status to 'rejected' directly in the database
+      const { data, error } = await supabase
         .from('applications')
-        .update({ status: 'rejected', updated_at: new Date().toISOString() })
-        .eq('id', app.id);
+        .update({ 
+          status: 'rejected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', app.id)
+        .select()
+        .single();
 
       if (error) {
-        console.error('Reject error:', error);
-        throw error;
+        console.error('Supabase update error:', error);
+        setError('Failed to update: ' + error.message);
+        alert('Failed to reject application. Error: ' + error.message);
+      } else {
+        console.log('Application rejected in DB:', data);
+        // Update local state to reflect the change
+        setApplications(prev => prev.map(a => 
+          a.id === app.id ? { ...a, status: 'rejected' } : a
+        ));
       }
-
-      // Update local state
-      setApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: 'rejected' } : a));
     } catch (err) {
       console.error('Error rejecting application:', err);
-      alert('Failed to reject application: ' + (err.message || 'Unknown error'));
+      setError('Error: ' + err.message);
+      alert('Failed to reject application: ' + err.message);
     } finally {
       setUpdating(null);
     }
@@ -189,6 +185,7 @@ export default function ApplicationManager() {
         <div>
           <h3 style={{ fontWeight: '700', marginBottom: '0.25rem' }}>{app.user_name || 'Unknown User'}</h3>
           <p style={{ color: '#6B7280', fontSize: '0.875rem' }}>{app.user_email}</p>
+          <p style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '0.25rem' }}>ID: {app.id}</p>
         </div>
         <div style={{ textAlign: 'right' }}>
           <span style={{
@@ -282,6 +279,19 @@ export default function ApplicationManager() {
       <h1 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '2rem' }}>
         Application Manager
       </h1>
+
+      {error && (
+        <div style={{ 
+          padding: '1rem', 
+          background: '#fee2e2', 
+          border: '1px solid #ef4444', 
+          borderRadius: '8px', 
+          marginBottom: '1rem',
+          color: '#ef4444'
+        }}>
+          {error}
+        </div>
+      )}
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' }}>
