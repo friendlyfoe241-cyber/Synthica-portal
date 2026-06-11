@@ -24,7 +24,7 @@ export default function ResearchHub() {
   const [applyMessage, setApplyMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const isAssociateResearcher = userProfile?.roles?.includes('associate_researcher') && userProfile?.status === 'approved';
+  const isAssociateResearcher = userProfile?.roles?.includes('associate_researcher');
 
   const handleApplyClick = (project) => {
     if (!isAssociateResearcher) {
