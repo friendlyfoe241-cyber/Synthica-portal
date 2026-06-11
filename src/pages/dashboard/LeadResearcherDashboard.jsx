@@ -10,6 +10,7 @@ const SUBJECTS = ['Biology', 'Computer Science', 'Chemistry', 'Economics', 'Math
 export default function LeadResearcherDashboard() {
   const { user } = useUserAuth();
   const [projects, setProjects] = useState([]);
+  const [pendingCounts, setPendingCounts] = useState({});
   const [selectedProject, setSelectedProject] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProject, setNewProject] = useState({ title: '', description: '', subject: 'Biology', maxMembers: 4 });
@@ -18,21 +19,39 @@ export default function LeadResearcherDashboard() {
   useEffect(() => {
     if (!user) return;
 
-    const fetchProjects = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // Fetch projects
+      const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('*')
         .eq('lead_researcher_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching projects:', error);
+      if (projectsError) {
+        console.error('Error fetching projects:', projectsError);
         return;
       }
-      setProjects(data || []);
+      setProjects(projectsData || []);
+
+      // Fetch pending application counts for each project
+      if (projectsData && projectsData.length > 0) {
+        const projectIds = projectsData.map(p => p.id);
+        const { data: applicationsData } = await supabase
+          .from('project_applications')
+          .select('project_id')
+          .in('project_id', projectIds)
+          .eq('status', 'pending');
+
+        // Count pending applications per project
+        const counts = {};
+        (applicationsData || []).forEach(app => {
+          counts[app.project_id] = (counts[app.project_id] || 0) + 1;
+        });
+        setPendingCounts(counts);
+      }
     };
 
-    fetchProjects();
+    fetchData();
 
     // Subscribe to real-time updates
     const channel = supabase
@@ -49,12 +68,39 @@ export default function LeadResearcherDashboard() {
           }
         }
       )
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'project_applications' },
+        (payload) => {
+          if (payload.new.status === 'pending') {
+            setPendingCounts(prev => ({
+              ...prev,
+              [payload.new.project_id]: (prev[payload.new.project_id] || 0) + 1
+            }));
+          }
+        }
+      )
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'project_applications' },
+        (payload) => {
+          // If status changed from pending, decrement count
+          if (payload.old?.status === 'pending' && payload.new?.status !== 'pending') {
+            setPendingCounts(prev => ({
+              ...prev,
+              [payload.new.project_id]: Math.max(0, (prev[payload.new.project_id] || 0) - 1)
+            }));
+          }
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [user]);
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+  };
 
   const createProject = async () => {
     if (!newProject.title.trim() || !user) return;
@@ -140,27 +186,43 @@ export default function LeadResearcherDashboard() {
           </motion.div>
         ) : (
           <div className="db-project-grid">
-            {projects.map((p, i) => (
-              <motion.div
-                key={p.id}
-                className="db-project-card"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-                onClick={() => setSelectedProject(p)}
-              >
-                <div className="db-project-card-header">
-                  <span className="db-subject-badge">{p.subject}</span>
-                  <span className={`db-status-badge db-status-${p.status}`}>{p.status}</span>
-                </div>
-                <h3 className="db-project-title">{p.title}</h3>
-                <p className="db-project-desc">{p.description}</p>
-                <div className="db-project-footer">
-                  <span className="db-project-members">👥 {p.member_ids?.length || 0} / {p.max_members}</span>
-                  <span className="db-project-arrow">Open →</span>
-                </div>
-              </motion.div>
-            ))}
+            {projects.map((p, i) => {
+              const pendingCount = pendingCounts[p.id] || 0;
+              return (
+                <motion.div
+                  key={p.id}
+                  className="db-project-card"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  onClick={() => handleProjectClick(p)}
+                >
+                  <div className="db-project-card-header">
+                    <span className="db-subject-badge">{p.subject}</span>
+                    <span className={`db-status-badge db-status-${p.status}`}>{p.status}</span>
+                    {pendingCount > 0 && (
+                      <span style={{
+                        background: '#EF4444',
+                        color: 'white',
+                        borderRadius: '10px',
+                        padding: '0.15rem 0.5rem',
+                        fontSize: '0.65rem',
+                        fontWeight: '700',
+                        marginLeft: 'auto'
+                      }}>
+                        {pendingCount} new
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="db-project-title">{p.title}</h3>
+                  <p className="db-project-desc">{p.description}</p>
+                  <div className="db-project-footer">
+                    <span className="db-project-members">👥 {p.member_ids?.length || 0} / {p.max_members}</span>
+                    <span className="db-project-arrow">Open →</span>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         )}
 
