@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import { supabase } from '../../lib/supabaseClient';
@@ -26,25 +26,56 @@ export default function DashboardShell({ children, activeTab }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [switchingRole, setSwitchingRole] = useState(false);
   const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [approvedRoles, setApprovedRoles] = useState([]);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: '',
+    bio: '',
+    institution: '',
+    interests: '',
+    linkedin: '',
+    twitter: '',
+  });
+  
+  const roleSwitcherRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (roleSwitcherRef.current && !roleSwitcherRef.current.contains(event.target)) {
+        setShowRoleSwitcher(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Fetch approved applications to get available roles
   useEffect(() => {
     if (!user) return;
 
     const fetchApprovedRoles = async () => {
-      const { data, error } = await supabase
-        .from('applications')
-        .select('role_applied')
-        .eq('user_id', user.id)
-        .eq('status', 'approved');
+      try {
+        const { data, error } = await supabase
+          .from('applications')
+          .select('role_applied')
+          .eq('user_id', user.id)
+          .eq('status', 'approved');
 
-      if (!error && data) {
-        // Get unique roles
-        const uniqueRoles = [...new Set(data.map(app => app.role_applied))];
-        setApprovedRoles(uniqueRoles);
+        if (!error && data) {
+          const uniqueRoles = [...new Set(data.map(app => app.role_applied))];
+          setApprovedRoles(uniqueRoles);
+        }
+      } catch (err) {
+        console.error('Error fetching approved roles:', err);
       }
     };
 
@@ -76,9 +107,44 @@ export default function DashboardShell({ children, activeTab }) {
     }
   };
 
-  const role = userProfile?.role || (approvedRoles[0]) || null;
-  const roleLabel = role ? ROLE_LABELS[role] : 'No Role';
-  const roleColor = role ? ROLE_COLORS[role] : '#6B7280';
+  const handleEditProfile = () => {
+    setEditForm({
+      full_name: userProfile?.full_name || '',
+      bio: userProfile?.bio || '',
+      institution: userProfile?.institution || '',
+      interests: userProfile?.interests || '',
+      linkedin: userProfile?.linkedin || '',
+      twitter: userProfile?.twitter || '',
+    });
+    setShowUserMenu(false);
+    setEditingProfile(true);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(editForm)
+        .eq('id', user.id);
+
+      if (error) throw error;
+      await refreshProfile();
+      setEditingProfile(false);
+      alert('Profile updated successfully!');
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('Failed to update profile: ' + err.message);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProfile(false);
+  };
+
+  // Get current role from approved roles or profile
+  const currentRole = userProfile?.role || (approvedRoles.length > 0 ? approvedRoles[0] : null);
+  const roleLabel = currentRole ? ROLE_LABELS[currentRole] : 'No Role';
+  const roleColor = currentRole ? ROLE_COLORS[currentRole] : '#6B7280';
 
   return (
     <div className="ds-layout">
@@ -90,78 +156,162 @@ export default function DashboardShell({ children, activeTab }) {
             <span>Synthica</span>
           </Link>
 
-          <div className="ds-user-card">
-            <img
-              src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/assets/logo/Synthica Preview Image (5).jpg'}
-              alt={user?.user_metadata?.full_name || user?.email}
-              className="ds-avatar"
-            />
-            <div className="ds-user-info">
-              <p className="ds-user-name">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Researcher'}</p>
-              {approvedRoles.length > 0 && (
-                <div style={{ position: 'relative' }}>
-                  <button
-                    onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
+          {/* User Menu */}
+          <div className="ds-user-card" ref={userMenuRef} style={{ position: 'relative' }}>
+            <div 
+              className="ds-user-clickable"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%' }}
+            >
+              <img
+                src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/assets/logo/Synthica Preview Image (5).jpg'}
+                alt={user?.user_metadata?.full_name || user?.email}
+                className="ds-avatar"
+              />
+              <div className="ds-user-info">
+                <p className="ds-user-name">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Researcher'}</p>
+                {approvedRoles.length > 0 && (
+                  <span 
                     className="ds-role-badge"
                     style={{ 
                       background: `${roleColor}22`, 
                       color: roleColor, 
-                      border: `1px solid ${roleColor}44`,
-                      cursor: 'pointer',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '6px',
-                      fontSize: '0.7rem',
-                      fontWeight: '600'
+                      border: `1px solid ${roleColor}44`
                     }}
                   >
-                    {roleLabel} {approvedRoles.length > 1 && '▼'}
+                    {roleLabel}
+                  </span>
+                )}
+                {approvedRoles.length === 0 && (
+                  <span className="ds-role-badge" style={{ background: '#f1f5f9', color: '#6B7280', border: '1px solid #e2e8f0' }}>
+                    No Role
+                  </span>
+                )}
+              </div>
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+                style={{ marginLeft: 'auto', color: '#94a3b8', transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
+              >
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+
+            {/* User Dropdown Menu */}
+            {showUserMenu && (
+              <div className="ds-user-dropdown">
+                <button 
+                  className="ds-dropdown-item"
+                  onClick={handleEditProfile}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Edit Profile
+                </button>
+                {approvedRoles.length > 1 && (
+                  <button 
+                    className="ds-dropdown-item"
+                    onClick={() => { setShowUserMenu(false); setShowRoleSwitcher(true); }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="8.5" cy="7" r="4"/>
+                      <polyline points="17 11 19 13 23 9"/>
+                    </svg>
+                    Switch Role
                   </button>
-                  {showRoleSwitcher && approvedRoles.length > 1 && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      marginTop: '0.5rem',
-                      background: 'white',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                      zIndex: 1000,
-                      minWidth: '160px',
-                      overflow: 'hidden'
-                    }}>
-                      {approvedRoles.map((roleKey) => (
-                        <button
-                          key={roleKey}
-                          onClick={() => handleRoleSwitch(roleKey)}
-                          disabled={switchingRole || roleKey === role}
-                          style={{
-                            display: 'block',
-                            width: '100%',
-                            padding: '0.75rem 1rem',
-                            textAlign: 'left',
-                            background: roleKey === role ? `${ROLE_COLORS[roleKey]}22` : 'transparent',
-                            color: ROLE_COLORS[roleKey],
-                            border: 'none',
-                            cursor: roleKey === role ? 'default' : 'pointer',
-                            fontWeight: roleKey === role ? '700' : '500',
-                            fontSize: '0.8rem',
-                            opacity: roleKey === role ? 1 : 0.8
-                          }}
-                        >
-                          {ROLE_LABELS[roleKey]} {roleKey === role && '✓'}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                )}
+                <div className="ds-dropdown-divider" />
+                <button className="ds-dropdown-item ds-dropdown-danger" onClick={handleLogout}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Role Switcher Dropdown */}
+          {approvedRoles.length > 1 && (
+            <div ref={roleSwitcherRef} style={{ position: 'relative', marginTop: '0.5rem', width: '100%' }}>
+              <button
+                onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
+                className="ds-role-switcher-btn"
+                style={{ 
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.5rem 0.75rem',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem'
+                }}
+              >
+                <span>Switch Role</span>
+                <svg 
+                  width="14" 
+                  height="14" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2"
+                  style={{ transform: showRoleSwitcher ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
+                >
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              {showRoleSwitcher && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '0.5rem',
+                  background: 'white',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                  zIndex: 1000,
+                  overflow: 'hidden'
+                }}>
+                  {approvedRoles.map((roleKey) => (
+                    <button
+                      key={roleKey}
+                      onClick={() => handleRoleSwitch(roleKey)}
+                      disabled={switchingRole || roleKey === currentRole}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: '100%',
+                        padding: '0.75rem 1rem',
+                        textAlign: 'left',
+                        background: roleKey === currentRole ? `${ROLE_COLORS[roleKey]}22` : 'transparent',
+                        color: ROLE_COLORS[roleKey],
+                        border: 'none',
+                        cursor: roleKey === currentRole ? 'default' : 'pointer',
+                        fontWeight: roleKey === currentRole ? '700' : '500',
+                        fontSize: '0.8rem',
+                        opacity: roleKey === currentRole ? 1 : 0.8
+                      }}
+                    >
+                      {ROLE_LABELS[roleKey]} {roleKey === currentRole && '✓'}
+                    </button>
+                  ))}
                 </div>
               )}
-              {approvedRoles.length === 0 && (
-                <span className="ds-role-badge" style={{ background: '#f1f5f9', color: '#6B7280', border: '1px solid #e2e8f0' }}>
-                  No Role
-                </span>
-              )}
             </div>
-          </div>
+          )}
         </div>
 
         <nav className="ds-nav">
@@ -186,12 +336,6 @@ export default function DashboardShell({ children, activeTab }) {
             <GlobeIcon /> Main Website
           </Link>
         </nav>
-
-        <div className="ds-sidebar-bottom">
-          <button className="ds-logout-btn" onClick={handleLogout}>
-            <LogoutIcon /> Sign Out
-          </button>
-        </div>
       </aside>
 
       {/* Mobile header */}
@@ -212,6 +356,82 @@ export default function DashboardShell({ children, activeTab }) {
       <main className="ds-main">
         {children}
       </main>
+
+      {/* Profile Edit Modal */}
+      {editingProfile && (
+        <div className="profile-modal-overlay" onClick={handleCancelEdit}>
+          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="profile-modal-header">
+              <h2>Edit Profile</h2>
+              <button className="profile-modal-close" onClick={handleCancelEdit}>×</button>
+            </div>
+            <div className="profile-modal-form">
+              <div className="profile-form-group">
+                <label>Display Name</label>
+                <input
+                  type="text"
+                  value={editForm.full_name}
+                  onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                  placeholder="Your display name"
+                />
+              </div>
+              <div className="profile-form-group">
+                <label>Bio</label>
+                <textarea
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                  placeholder="Tell others about yourself..."
+                  rows={3}
+                />
+              </div>
+              <div className="profile-form-group">
+                <label>Institution / School</label>
+                <input
+                  type="text"
+                  value={editForm.institution}
+                  onChange={(e) => setEditForm({ ...editForm, institution: e.target.value })}
+                  placeholder="Your school or organization"
+                />
+              </div>
+              <div className="profile-form-group">
+                <label>Research Interests</label>
+                <input
+                  type="text"
+                  value={editForm.interests}
+                  onChange={(e) => setEditForm({ ...editForm, interests: e.target.value })}
+                  placeholder="e.g., Machine Learning, Climate Science"
+                />
+              </div>
+              <div className="profile-form-group">
+                <label>LinkedIn URL</label>
+                <input
+                  type="url"
+                  value={editForm.linkedin}
+                  onChange={(e) => setEditForm({ ...editForm, linkedin: e.target.value })}
+                  placeholder="https://linkedin.com/in/..."
+                />
+              </div>
+              <div className="profile-form-group">
+                <label>Twitter / X URL</label>
+                <input
+                  type="url"
+                  value={editForm.twitter}
+                  onChange={(e) => setEditForm({ ...editForm, twitter: e.target.value })}
+                  placeholder="https://twitter.com/..."
+                />
+              </div>
+              <div className="profile-modal-actions">
+                <button className="profile-edit-cancel" onClick={handleCancelEdit}>
+                  Cancel
+                </button>
+                <button className="profile-edit-save" onClick={handleSaveProfile}>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

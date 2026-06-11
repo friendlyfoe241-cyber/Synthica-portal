@@ -11,6 +11,13 @@ const ROLE_LABELS = {
   independent_researcher: 'Independent Researcher',
 };
 
+// Helper to get display name for a profile
+const getDisplayName = (profile) => {
+  if (profile.full_name) return profile.full_name;
+  // Fallback to Google account name if available
+  return profile.user_name || 'Unknown User';
+};
+
 export default function People() {
   const { user } = useUserAuth();
   const [profiles, setProfiles] = useState([]);
@@ -33,13 +40,19 @@ export default function People() {
 
   const fetchProfiles = async () => {
     setLoading(true);
+    // Fetch both profiles table and auth metadata
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setProfiles(data);
+      // Enhance profiles with user_name from user_metadata if available
+      const enhancedProfiles = data.map(profile => ({
+        ...profile,
+        user_name: profile.user_name || (user?.id === profile.id ? user.user_metadata?.full_name : null)
+      }));
+      setProfiles(enhancedProfiles);
     }
     setLoading(false);
   };
@@ -131,11 +144,11 @@ export default function People() {
                 >
                   <img
                     src={profile.avatar_url || '/assets/logo/Synthica Preview Image (5).jpg'}
-                    alt={profile.full_name || 'User'}
+                    alt={getDisplayName(profile)}
                     className="people-card-avatar"
                   />
                   <div className="people-card-info">
-                    <h3>{profile.full_name || 'Anonymous'}</h3>
+                    <h3>{getDisplayName(profile)}</h3>
                     <span className="people-card-role">
                       {ROLE_LABELS[profile.role] || 'Member'}
                     </span>
@@ -227,11 +240,11 @@ export default function People() {
                 <div className="profile-header">
                   <img
                     src={selectedProfile.avatar_url || '/assets/logo/Synthica Preview Image (5).jpg'}
-                    alt={selectedProfile.full_name || 'User'}
+                    alt={getDisplayName(selectedProfile)}
                     className="profile-avatar"
                   />
                   <div className="profile-header-info">
-                    <h2>{selectedProfile.full_name || 'Anonymous'}</h2>
+                    <h2>{getDisplayName(selectedProfile)}</h2>
                     <span className="profile-role">
                       {ROLE_LABELS[selectedProfile.role] || 'Member'}
                     </span>
