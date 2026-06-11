@@ -53,12 +53,18 @@ export default function ProjectDetail({ project, isLead, onBack }) {
 
       // Fetch project applications (only for lead researcher)
       if (isLead) {
-        const { data: applicationsData } = await supabase
+        const { data: applicationsData, error: appsError } = await supabase
           .from('project_applications')
           .select('*, profiles(full_name, institution)')
           .eq('project_id', projectId)
           .order('created_at', { ascending: false });
-        setApplications(applicationsData || []);
+        
+        if (appsError) {
+          console.error('Error fetching applications:', appsError);
+        } else {
+          console.log('Fetched applications:', applicationsData);
+          setApplications(applicationsData || []);
+        }
       }
     };
 
@@ -76,7 +82,7 @@ export default function ProjectDetail({ project, isLead, onBack }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [project.id]);
+  }, [project.id, isLead]);
 
   const handleApplicationChange = (payload) => {
     if (payload.eventType === 'INSERT') {
