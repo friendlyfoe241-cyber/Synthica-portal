@@ -37,6 +37,8 @@ export default function DashboardShell({ children, activeTab }) {
     linkedin: '',
     twitter: '',
   });
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   const roleSwitcherRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -96,6 +98,50 @@ export default function DashboardShell({ children, activeTab }) {
 
     fetchApprovedRoles();
   }, [user, userProfile]);
+
+  // Fetch notifications for lead researchers
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_read', false)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (!error && data) {
+          setNotifications(data || []);
+          setUnreadCount(data?.length || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+      }
+    };
+
+    fetchNotifications();
+
+    // Subscribe to new notifications
+    const channel = supabase
+      .channel('notifications-changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+        setNotifications(prev => [payload.new, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -365,6 +411,21 @@ export default function DashboardShell({ children, activeTab }) {
         <nav className="ds-nav">
           <Link to="/dashboard" className={`ds-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}>
             <DashIcon /> Dashboard
+            {unreadCount > 0 && (
+              <span style={{
+                marginLeft: 'auto',
+                background: '#EF4444',
+                color: 'white',
+                borderRadius: '10px',
+                padding: '0.15rem 0.5rem',
+                fontSize: '0.7rem',
+                fontWeight: '700',
+                minWidth: '20px',
+                textAlign: 'center'
+              }}>
+                {unreadCount}
+              </span>
+            )}
           </Link>
           <Link to="/research-hub" className={`ds-nav-item ${activeTab === 'research-hub' ? 'active' : ''}`}>
             <HubIcon /> Research Hub

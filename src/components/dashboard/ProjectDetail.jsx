@@ -15,6 +15,7 @@ export default function ProjectDetail({ project, isLead, onBack }) {
   const [tasks, setTasks] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [readings, setReadings] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [newAnn, setNewAnn] = useState('');
   const [newTask, setNewTask] = useState({ title: '', description: '', status: 'todo', due_date: '' });
   const [newReading, setNewReading] = useState({ title: '', url: '', description: '' });
@@ -49,6 +50,16 @@ export default function ProjectDetail({ project, isLead, onBack }) {
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
       setReadings(readingsData || []);
+
+      // Fetch project applications (only for lead researcher)
+      if (isLead) {
+        const { data: applicationsData } = await supabase
+          .from('project_applications')
+          .select('*, profiles(full_name, institution)')
+          .eq('project_id', projectId)
+          .order('created_at', { ascending: false });
+        setApplications(applicationsData || []);
+      }
     };
 
     fetchData();
@@ -59,12 +70,78 @@ export default function ProjectDetail({ project, isLead, onBack }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: `project_id=eq.${projectId}` }, handleTaskChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements', filter: `project_id=eq.${projectId}` }, handleAnnouncementChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'readings', filter: `project_id=eq.${projectId}` }, handleReadingChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'project_applications', filter: `project_id=eq.${projectId}` }, handleApplicationChange)
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [project.id]);
+
+  const handleApplicationChange = (payload) => {
+    if (payload.eventType === 'INSERT') {
+      // Fetch the full application with profile
+      supabase
+        .from('project_applications')
+        .select('*, profiles(full_name, institution)')
+        .eq('id', payload.new.id)
+        .single()
+        .then(({ data }) => {
+          if (data) setApplications(prev => [data, ...prev]);
+        });
+    } else if (payload.eventType === 'UPDATE') {
+      setApplications(prev => prev.map(a => a.id === payload.new.id ? { ...a, ...payload.new } : a));
+    }
+  };
+
+  const approveApplication = async (applicationId, userId) => {
+    try {
+      // Update application status
+      const { error } = await supabase
+        .from('project_applications')
+        .update({ status: 'approved', updated_at: new Date().toISOString() })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
+      // Add user to project members
+      const currentMemberIds = project.member_ids || [];
+      const currentMemberNames = project.member_names || {};
+      
+      // Get the user's name from the application
+      const app = applications.find(a => a.id === applicationId);
+      const userName = app?.profiles?.full_name || 'Unknown User';
+
+      await supabase
+        .from('projects')
+        .update({
+          member_ids: [...currentMemberIds, userId],
+          member_names: { ...currentMemberNames, [userId]: userName }
+        })
+        .eq('id', project.id);
+
+      // Update local state
+      setApplications(prev => prev.map(a => a.id === applicationId ? { ...a, status: 'approved' } : a));
+    } catch (err) {
+      console.error('Error approving application:', err);
+      alert('Failed to approve application. Please try again.');
+    }
+  };
+
+  const rejectApplication = async (applicationId) => {
+    try {
+      const { error } = await supabase
+        .from('project_applications')
+        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+      setApplications(prev => prev.map(a => a.id === applicationId ? { ...a, status: 'rejected' } : a));
+    } catch (err) {
+      console.error('Error rejecting application:', err);
+      alert('Failed to reject application. Please try again.');
+    }
+  };
 
   const handleTaskChange = (payload) => {
     if (payload.eventType === 'INSERT') {
@@ -172,6 +249,21 @@ export default function ProjectDetail({ project, isLead, onBack }) {
         {['tasks', 'announcements', 'readings', 'team'].map(t => (
           <button key={t} className={`db-tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)}>
             {t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === 'team' && isLead && applications.filter(a => a.status === 'pending').length > 0 && (
+              <span style={{
+                marginLeft: '0.5rem',
+                background: '#EF4444',
+                color: 'white',
+                borderRadius: '10px',
+                padding: '0.1rem 0.4rem',
+                fontSize: '0.65rem',
+                fontWeight: '700',
+                minWidth: '18px',
+                textAlign: 'center'
+              }}>
+                {applications.filter(a => a.status === 'pending').length}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -325,6 +417,43 @@ export default function ProjectDetail({ project, isLead, onBack }) {
         {/* TEAM */}
         {activeTab === 'team' && (
           <motion.div key="team" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {/* Show pending applications for lead researcher */}
+            {isLead && applications.filter(a => a.status === 'pending').length > 0 && (
+              <div className="db-applications-section" style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: '600', color: '#1F2937', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ background: '#EF4444', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>
+                    {applications.filter(a => a.status === 'pending').length}
+                  </span>
+                  Pending Applications
+                </h3>
+                {applications.filter(a => a.status === 'pending').map((app, i) => (
+                  <motion.div key={app.id} className="db-application-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{
+                    background: 'white',
+                    borderRadius: '12px',
+                    padding: '1.25rem',
+                    marginBottom: '0.75rem',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #2589ed, #78b4fb)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '1.1rem', flexShrink: 0 }}>
+                        {app.profiles?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontWeight: '600', color: '#1F2937', marginBottom: '0.25rem' }}>{app.profiles?.full_name || 'Unknown User'}</p>
+                        {app.profiles?.institution && <p style={{ fontSize: '0.8rem', color: '#9CA3AF', marginBottom: '0.5rem' }}>{app.profiles.institution}</p>}
+                        {app.message && <p style={{ fontSize: '0.875rem', color: '#6B7280', lineHeight: '1.5', marginBottom: '0.75rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '8px' }}>{app.message}</p>}
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button onClick={() => approveApplication(app.id, app.user_id)} style={{ padding: '0.5rem 1rem', background: '#16a34a', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', transition: 'background 0.2s' }}>Approve</button>
+                          <button onClick={() => rejectApplication(app.id)} style={{ padding: '0.5rem 1rem', background: '#f1f5f9', color: '#EF4444', border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', transition: 'background 0.2s' }}>Reject</button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
             <div className="db-team-grid">
               {members.map((m, i) => (
                 <motion.div key={m.uid} className="db-team-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
