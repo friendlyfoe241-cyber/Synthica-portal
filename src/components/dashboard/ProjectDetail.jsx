@@ -426,6 +426,19 @@ export default function ProjectDetail({ project, isLead, onBack }) {
         {/* TEAM */}
         {activeTab === 'team' && (
           <motion.div key="team" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {/* Debug info - shows current state */}
+            <div style={{ 
+              background: '#fef3c7', 
+              border: '1px solid #f59e0b',
+              borderRadius: '8px', 
+              padding: '0.75rem', 
+              marginBottom: '1rem',
+              fontSize: '0.8rem',
+              fontFamily: 'monospace'
+            }}>
+              <strong>Debug:</strong> isLead={isLead ? 'true' : 'false'}, applications count={applications.length}, pending={applications.filter(a => a.status === 'pending').length}
+            </div>
+
             {/* Show pending applications for lead researcher */}
             {isLead && applications.filter(a => a.status === 'pending').length > 0 && (
               <div className="db-applications-section" style={{ marginBottom: '2rem' }}>
@@ -460,6 +473,20 @@ export default function ProjectDetail({ project, isLead, onBack }) {
                     </div>
                   </motion.div>
                 ))}
+              </div>
+            )}
+
+            {/* Show message if no pending applications */}
+            {isLead && applications.filter(a => a.status === 'pending').length === 0 && applications.length > 0 && (
+              <div style={{ 
+                background: '#f0fdf4', 
+                border: '1px solid #22c55e',
+                borderRadius: '8px', 
+                padding: '1rem', 
+                marginBottom: '1rem',
+                textAlign: 'center'
+              }}>
+                <p style={{ color: '#166534', margin: 0 }}>No pending applications. All requests have been processed.</p>
               </div>
             )}
 
