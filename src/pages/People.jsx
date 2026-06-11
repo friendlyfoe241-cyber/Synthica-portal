@@ -12,10 +12,18 @@ const ROLE_LABELS = {
 };
 
 // Helper to get display name for a profile
-const getDisplayName = (profile) => {
+const getDisplayName = (profile, currentUser) => {
+  // Priority 1: full_name from profile
   if (profile.full_name) return profile.full_name;
-  // Fallback to Google account name if available
-  return profile.user_name || 'Unknown User';
+  // Priority 2: user_name from profile (sometimes set from applications)
+  if (profile.user_name) return profile.user_name;
+  // Priority 3: Check if this is the current user and use their auth metadata
+  if (currentUser && profile.id === currentUser.id && currentUser.user_metadata?.full_name) {
+    return currentUser.user_metadata.full_name;
+  }
+  // Priority 4: Fallback to email username
+  if (profile.email) return profile.email.split('@')[0];
+  return 'Unknown User';
 };
 
 export default function People() {
@@ -40,17 +48,18 @@ export default function People() {
 
   const fetchProfiles = async () => {
     setLoading(true);
-    // Fetch both profiles table and auth metadata
+    // Fetch profiles with all available data
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      // Enhance profiles with user_name from user_metadata if available
+      // Enhance profiles with display names
       const enhancedProfiles = data.map(profile => ({
         ...profile,
-        user_name: profile.user_name || (user?.id === profile.id ? user.user_metadata?.full_name : null)
+        // Set display name from full_name if available
+        display_name: profile.full_name || profile.user_name || null
       }));
       setProfiles(enhancedProfiles);
     }
@@ -144,11 +153,11 @@ export default function People() {
                 >
                   <img
                     src={profile.avatar_url || '/assets/logo/Synthica Preview Image (5).jpg'}
-                    alt={getDisplayName(profile)}
+                    alt={getDisplayName(profile, user)}
                     className="people-card-avatar"
                   />
                   <div className="people-card-info">
-                    <h3>{getDisplayName(profile)}</h3>
+                    <h3>{getDisplayName(profile, user)}</h3>
                     <span className="people-card-role">
                       {ROLE_LABELS[profile.role] || 'Member'}
                     </span>
@@ -240,11 +249,11 @@ export default function People() {
                 <div className="profile-header">
                   <img
                     src={selectedProfile.avatar_url || '/assets/logo/Synthica Preview Image (5).jpg'}
-                    alt={getDisplayName(selectedProfile)}
+                    alt={getDisplayName(selectedProfile, user)}
                     className="profile-avatar"
                   />
                   <div className="profile-header-info">
-                    <h2>{getDisplayName(selectedProfile)}</h2>
+                    <h2>{getDisplayName(selectedProfile, user)}</h2>
                     <span className="profile-role">
                       {ROLE_LABELS[selectedProfile.role] || 'Member'}
                     </span>

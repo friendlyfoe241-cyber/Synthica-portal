@@ -50,7 +50,61 @@ export function AuthProvider({ children }) {
         setProfileError(error.message);
       }
       
-      setUserProfile(data);
+      // If profile doesn't exist, create one with auth metadata
+      if (!data && !error) {
+        const session = await supabase.auth.getSession();
+        const metadata = session?.data?.session?.user?.user_metadata;
+        
+        const newProfile = {
+          id: userId,
+          email: session?.data?.session?.user?.email,
+          full_name: metadata?.full_name || metadata?.name || null,
+          avatar_url: metadata?.avatar_url || metadata?.picture || null,
+          role: null,
+          roles: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        
+        const { data: createdData, error: createError } = await supabase
+          .from('profiles')
+          .insert(newProfile)
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Profile create error:', createError);
+        }
+        
+        setUserProfile(createdData || newProfile);
+      } else {
+        // If profile exists but full_name is empty, update it from auth metadata
+        if (data && !data.full_name) {
+          const session = await supabase.auth.getSession();
+          const metadata = session?.data?.session?.user?.user_metadata;
+          
+          if (metadata?.full_name || metadata?.name) {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ 
+                full_name: metadata.full_name || metadata.name,
+                avatar_url: metadata.avatar_url || metadata.picture || data.avatar_url,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', userId);
+            
+            if (!updateError) {
+              setUserProfile({ ...data, full_name: metadata.full_name || metadata.name });
+            } else {
+              setUserProfile(data);
+            }
+          } else {
+            setUserProfile(data);
+          }
+        } else {
+          setUserProfile(data);
+        }
+      }
     } catch (e) {
       console.error('Profile load exception:', e);
       setProfileError(e.message);
