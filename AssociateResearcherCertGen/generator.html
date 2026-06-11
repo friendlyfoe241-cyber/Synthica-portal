@@ -25,8 +25,7 @@
 
   async function generateCert() {
     const tmpl = new Image();
-    tmpl.crossOrigin = "anonymous";
-    tmpl.src = '../certificate-template.jpg';
+    tmpl.src = './certificate-template.jpg';
     
     await new Promise(resolve => { tmpl.onload = resolve; tmpl.onerror = resolve; });
     await document.fonts.load('10px "Cinzel"');
