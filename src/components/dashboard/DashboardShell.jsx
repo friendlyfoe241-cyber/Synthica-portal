@@ -270,7 +270,7 @@ export default function DashboardShell({ children, activeTab }) {
 
           {/* Role Switcher Dropdown */}
           {approvedRoles.length > 1 && (
-            <div ref={roleSwitcherRef} style={{ position: 'relative', marginTop: '0.5rem', width: '100%' }}>
+            <div ref={roleSwitcherRef} style={{ position: 'relative', marginTop: '0.75rem', width: '100%' }}>
               <button
                 onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
                 className="ds-role-switcher-btn"
@@ -279,23 +279,35 @@ export default function DashboardShell({ children, activeTab }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0.5rem 0.75rem',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
+                  padding: '0.75rem 1rem',
+                  background: 'white',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '12px',
                   cursor: 'pointer',
-                  fontSize: '0.8rem'
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#374151',
+                  fontFamily: "'Garet', sans-serif",
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                  transition: 'all 0.2s'
                 }}
               >
-                <span>Switch Role</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="8.5" cy="7" r="4"/>
+                    <polyline points="17 11 19 13 23 9"/>
+                  </svg>
+                  Switch Role
+                </span>
                 <svg 
-                  width="14" 
-                  height="14" 
+                  width="16" 
+                  height="16" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   stroke="currentColor" 
                   strokeWidth="2"
-                  style={{ transform: showRoleSwitcher ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}
+                  style={{ transform: showRoleSwitcher ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', color: '#94a3b8' }}
                 >
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -308,8 +320,9 @@ export default function DashboardShell({ children, activeTab }) {
                   right: 0,
                   marginTop: '0.5rem',
                   background: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                  border: '1px solid #e2e8f0',
                   zIndex: 1000,
                   overflow: 'hidden'
                 }}>
@@ -321,19 +334,26 @@ export default function DashboardShell({ children, activeTab }) {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'space-between',
                         width: '100%',
-                        padding: '0.75rem 1rem',
+                        padding: '0.875rem 1rem',
                         textAlign: 'left',
-                        background: roleKey === currentRole ? `${ROLE_COLORS[roleKey]}22` : 'transparent',
+                        background: roleKey === currentRole ? `${ROLE_COLORS[roleKey]}15` : 'transparent',
                         color: ROLE_COLORS[roleKey],
                         border: 'none',
                         cursor: roleKey === currentRole ? 'default' : 'pointer',
-                        fontWeight: roleKey === currentRole ? '700' : '500',
-                        fontSize: '0.8rem',
-                        opacity: roleKey === currentRole ? 1 : 0.8
+                        fontWeight: '700',
+                        fontSize: '0.875rem',
+                        fontFamily: "'Garet', sans-serif",
+                        transition: 'background 0.15s'
                       }}
                     >
-                      {ROLE_LABELS[roleKey]} {roleKey === currentRole && '✓'}
+                      <span>{ROLE_LABELS[roleKey]}</span>
+                      {roleKey === currentRole && (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
                     </button>
                   ))}
                 </div>

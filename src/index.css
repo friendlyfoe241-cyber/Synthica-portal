@@ -7219,7 +7219,7 @@ a.db-reading-title:hover { color: #2589ed; }
 .db-notes-area:focus { border-color: #78b4fb; background: white; }
 
 /* Research Hub */
-.rh-page { padding: 2.5rem 0; }
+.rh-page { padding: 2.5rem 1.5rem; }
 .rh-hero { text-align: center; margin-bottom: 2.5rem; }
 .rh-title { font-size: 2.5rem; font-weight: 800; color: #0F172A; margin: 0.75rem 0 0.5rem; }
 .rh-subtitle { font-size: 1rem; color: #6B7280; max-width: 560px; margin: 0 auto; line-height: 1.6; }
@@ -7263,7 +7263,7 @@ a.db-reading-title:hover { color: #2589ed; }
 .rh-full-badge, .rh-closed-badge { font-size: 0.8rem; color: #9CA3AF; }
 
 /* Application Hub */
-.ah-page { padding: 2.5rem 0; }
+.ah-page { padding: 2.5rem 1.5rem; }
 .ah-login-prompt {
   background: rgba(120,180,251,0.1); border: 1px solid rgba(120,180,251,0.25);
   border-radius: 14px; padding: 1rem 1.5rem; margin-bottom: 2rem;
@@ -7946,13 +7946,15 @@ a.db-reading-title:hover { color: #2589ed; }
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   background: transparent;
   border: none;
   text-align: left;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: #374151;
+  font-family: 'Garet', sans-serif;
   transition: background 0.2s;
 }
 
