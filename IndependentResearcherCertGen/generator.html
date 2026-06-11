@@ -11,107 +11,102 @@
   .btn { margin-top:20px; padding:14px 32px; background:linear-gradient(135deg,#c9a84c,#e8cc7a); color:#0a1628; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:14px; }
   .btn:hover { opacity:0.9; }
   .name-display { color:#e8cc7a; font-size:14px; margin-bottom:20px; text-align:center; }
-  .error { color:#ef4444; padding:20px; text-align:center; }
-  .loading { color:#e8cc7a; padding:20px; text-align:center; }
 </style>
 </head>
 <body>
-<p class="name-display">Generating certificate for: <span id="name-display"></span></p>
-<p id="status" class="loading">Loading certificate...</p>
+<p class="name-display">Certificate for: <span id="name-display"></span></p>
 <canvas id="preview-canvas"></canvas>
-<button class="btn" id="download-btn" style="display:none">Download Certificate</button>
+<button class="btn" id="download-btn">Download Certificate</button>
 
 <script>
   const params = new URLSearchParams(window.location.search);
   const name = params.get('name') || 'Unknown User';
   document.getElementById('name-display').textContent = name;
 
-  async function generateCert() {
+  function drawCertificate() {
     const canvas = document.getElementById('preview-canvas');
     const ctx = canvas.getContext('2d');
-    const statusEl = document.getElementById('status');
-    const btn = document.getElementById('download-btn');
-    
-    try {
-      const tmpl = new Image();
-      const paths = ['./certificate-template.jpg', 'certificate-template.jpg', '../certificate-template.jpg'];
-      let loaded = false;
-      
-      for (const path of paths) {
-        console.log('Trying to load:', path);
-        tmpl.src = path;
-        await new Promise((resolve, reject) => {
-          tmpl.onload = resolve;
-          tmpl.onerror = () => reject(new Error('Failed to load: ' + path));
-          setTimeout(reject, 3000);
-        });
-        loaded = true;
-        console.log('Successfully loaded:', path);
-        break;
-      }
-      
-      if (!loaded) throw new Error('Could not load template from any path');
+    const W = 1200, H = 800;
+    canvas.width = W;
+    canvas.height = H;
 
-      await document.fonts.ready;
-      
-      const W = tmpl.naturalWidth || 1920;
-      const H = tmpl.naturalHeight || 1080;
-      canvas.width = W;
-      canvas.height = H;
-      
-      ctx.drawImage(tmpl, 0, 0, W, H);
+    // Background
+    ctx.fillStyle = '#0a1628';
+    ctx.fillRect(0, 0, W, H);
 
-      let baseFontSize = Math.floor(W * 0.052);
-      ctx.font = `700 ${baseFontSize}px "Cinzel", serif`;
-      const maxTextWidth = W * 0.75;
-      while (ctx.measureText(name).width > maxTextWidth && baseFontSize > 24) {
-        baseFontSize -= 4;
-        ctx.font = `700 ${baseFontSize}px "Cinzel", serif`;
-      }
+    // Border
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(20, 20, W - 40, H - 40);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(30, 30, W - 60, H - 60);
 
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#c9a84c';
-      ctx.fillText(name, W / 2, H * 0.345);
+    // Header
+    ctx.fillStyle = '#c9a84c';
+    ctx.font = 'bold 24px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SYNTHICA', W / 2, 80);
 
-      statusEl.style.display = 'none';
-      btn.style.display = 'block';
-      
-      btn.addEventListener('click', function() {
-        this.href = canvas.toDataURL('image/png');
-        this.download = 'Independent-Researcher-Certificate.png';
-        this.click();
-      });
-    } catch (err) {
-      console.error('Error:', err);
-      statusEl.textContent = 'Error: ' + err.message;
-      statusEl.className = 'error';
-      statusEl.style.display = 'block';
-      
-      canvas.width = 800;
-      canvas.height = 600;
-      ctx.fillStyle = '#0a1628';
-      ctx.fillRect(0, 0, 800, 600);
-      ctx.fillStyle = '#c9a84c';
-      ctx.font = '700 40px serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Certificate', 400, 200);
-      ctx.font = '24px sans-serif';
-      ctx.fillStyle = '#e8edf5';
-      ctx.fillText(name, 400, 350);
-      ctx.font = '16px sans-serif';
-      ctx.fillText('Independent Researcher', 400, 420);
-      
-      btn.style.display = 'block';
-      btn.addEventListener('click', function() {
-        this.href = canvas.toDataURL('image/png');
-        this.download = 'Independent-Researcher-Certificate.png';
-        this.click();
-      });
-    }
+    // Decorative line
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 100, 100);
+    ctx.lineTo(W / 2 + 100, 100);
+    ctx.stroke();
+
+    // Title
+    ctx.font = 'bold 48px serif';
+    ctx.fillText('CERTIFICATE OF ACHIEVEMENT', W / 2, 180);
+
+    // Subtitle
+    ctx.font = '20px serif';
+    ctx.fillStyle = '#7a8ba8';
+    ctx.fillText('This certifies that', W / 2, 280);
+
+    // Name
+    ctx.font = 'bold 56px serif';
+    ctx.fillStyle = '#e8cc7a';
+    ctx.fillText(name, W / 2, 380);
+
+    // Underline for name
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 2;
+    const nameWidth = ctx.measureText(name).width;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - nameWidth / 2 - 20, 400);
+    ctx.lineTo(W / 2 + nameWidth / 2 + 20, 400);
+    ctx.stroke();
+
+    // Achievement text
+    ctx.font = '20px serif';
+    ctx.fillStyle = '#7a8ba8';
+    ctx.fillText('has successfully completed requirements for', W / 2, 480);
+
+    // Role
+    ctx.font = 'bold 36px serif';
+    ctx.fillStyle = '#c9a84c';
+    ctx.fillText('INDEPENDENT RESEARCHER', W / 2, 560);
+
+    // Date
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    ctx.font = '16px serif';
+    ctx.fillStyle = '#7a8ba8';
+    ctx.fillText('Awarded on ' + date, W / 2, 700);
+
+    // Footer logo
+    ctx.font = '14px serif';
+    ctx.fillText('Synthica Research Network', W / 2, 750);
   }
 
-  generateCert();
+  drawCertificate();
+
+  document.getElementById('download-btn').addEventListener('click', function() {
+    const canvas = document.getElementById('preview-canvas');
+    this.href = canvas.toDataURL('image/png');
+    this.download = 'Independent-Researcher-Certificate.png';
+    this.click();
+  });
 </script>
 </body>
 </html>
