@@ -23,89 +23,58 @@
   const name = params.get('name') || 'Unknown User';
   document.getElementById('name-display').textContent = name;
 
-  function drawCertificate() {
+  async function generateCert() {
     const canvas = document.getElementById('preview-canvas');
     const ctx = canvas.getContext('2d');
-    const W = 1200, H = 800;
+
+    const tmpl = new Image();
+    tmpl.src = 'certificate-template.jpg';
+
+    await new Promise((resolve, reject) => {
+      tmpl.onload = resolve;
+      tmpl.onerror = () => {
+        alert('Could not load certificate-template.jpg. Please ensure the image file is in the same folder as this HTML file.');
+        reject(new Error('Image not found'));
+      };
+    });
+
+    await document.fonts.ready;
+
+    const W = tmpl.naturalWidth || 1920;
+    const H = tmpl.naturalHeight || 1080;
     canvas.width = W;
     canvas.height = H;
 
-    // Background
-    ctx.fillStyle = '#0a1628';
-    ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(tmpl, 0, 0, W, H);
 
-    // Border
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(20, 20, W - 40, H - 40);
-    ctx.lineWidth = 2;
-    ctx.strokeRect(30, 30, W - 60, H - 60);
+    let baseFontSize = Math.floor(W * 0.052);
+    ctx.font = `700 ${baseFontSize}px serif`;
+    const maxTextWidth = W * 0.75;
+    while (ctx.measureText(name).width > maxTextWidth && baseFontSize > 24) {
+      baseFontSize -= 4;
+      ctx.font = `700 ${baseFontSize}px serif`;
+    }
 
-    // Header
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = 'bold 24px serif';
     ctx.textAlign = 'center';
-    ctx.fillText('SYNTHICA', W / 2, 80);
-
-    // Decorative line
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(W / 2 - 100, 100);
-    ctx.lineTo(W / 2 + 100, 100);
-    ctx.stroke();
-
-    // Title
-    ctx.font = 'bold 48px serif';
-    ctx.fillText('CERTIFICATE OF ACHIEVEMENT', W / 2, 180);
-
-    // Subtitle
-    ctx.font = '20px serif';
-    ctx.fillStyle = '#7a8ba8';
-    ctx.fillText('This certifies that', W / 2, 280);
-
-    // Name
-    ctx.font = 'bold 56px serif';
-    ctx.fillStyle = '#e8cc7a';
-    ctx.fillText(name, W / 2, 380);
-
-    // Underline for name
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 2;
-    const nameWidth = ctx.measureText(name).width;
-    ctx.beginPath();
-    ctx.moveTo(W / 2 - nameWidth / 2 - 20, 400);
-    ctx.lineTo(W / 2 + nameWidth / 2 + 20, 400);
-    ctx.stroke();
-
-    // Achievement text
-    ctx.font = '20px serif';
-    ctx.fillStyle = '#7a8ba8';
-    ctx.fillText('has successfully completed requirements for', W / 2, 480);
-
-    // Role
-    ctx.font = 'bold 36px serif';
+    ctx.textBaseline = 'middle';
     ctx.fillStyle = '#c9a84c';
-    ctx.fillText('INDEPENDENT RESEARCHER', W / 2, 560);
-
-    // Date
-    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    ctx.font = '16px serif';
-    ctx.fillStyle = '#7a8ba8';
-    ctx.fillText('Awarded on ' + date, W / 2, 700);
-
-    // Footer logo
-    ctx.font = '14px serif';
-    ctx.fillText('Synthica Research Network', W / 2, 750);
+    ctx.fillText(name, W / 2, H * 0.345);
   }
 
-  drawCertificate();
-
-  document.getElementById('download-btn').addEventListener('click', function() {
-    const canvas = document.getElementById('preview-canvas');
-    this.href = canvas.toDataURL('image/png');
-    this.download = 'Independent-Researcher-Certificate.png';
-    this.click();
+  generateCert().then(() => {
+    document.getElementById('download-btn').addEventListener('click', function() {
+      const canvas = document.getElementById('preview-canvas');
+      this.href = canvas.toDataURL('image/png');
+      this.download = 'Independent-Researcher-Certificate.png';
+      this.click();
+    });
+  }).catch(() => {
+    document.getElementById('download-btn').addEventListener('click', function() {
+      const canvas = document.getElementById('preview-canvas');
+      this.href = canvas.toDataURL('image/png');
+      this.download = 'Independent-Researcher-Certificate.png';
+      this.click();
+    });
   });
 </script>
 </body>
