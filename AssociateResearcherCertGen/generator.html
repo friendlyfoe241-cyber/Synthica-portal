@@ -11,12 +11,15 @@
   .btn { margin-top:20px; padding:14px 32px; background:linear-gradient(135deg,#c9a84c,#e8cc7a); color:#0a1628; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-size:14px; }
   .btn:hover { opacity:0.9; }
   .name-display { color:#e8cc7a; font-size:14px; margin-bottom:20px; text-align:center; }
+  .error { color:#ef4444; padding:20px; text-align:center; }
+  .loading { color:#e8cc7a; padding:20px; text-align:center; }
 </style>
 </head>
 <body>
 <p class="name-display">Generating certificate for: <span id="name-display"></span></p>
+<p id="status" class="loading">Loading certificate...</p>
 <canvas id="preview-canvas"></canvas>
-<button class="btn" id="download-btn">Download Certificate</button>
+<button class="btn" id="download-btn" style="display:none">Download Certificate</button>
 
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -24,40 +27,94 @@
   document.getElementById('name-display').textContent = name;
 
   async function generateCert() {
-    const tmpl = new Image();
-    tmpl.src = './certificate-template.jpg';
-    
-    await new Promise(resolve => { tmpl.onload = resolve; tmpl.onerror = resolve; });
-    await document.fonts.load('10px "Cinzel"');
-    await document.fonts.ready;
-
     const canvas = document.getElementById('preview-canvas');
     const ctx = canvas.getContext('2d');
-    const W = tmpl.naturalWidth || 1920;
-    const H = tmpl.naturalHeight || 1080;
-    canvas.width = W;
-    canvas.height = H;
-    ctx.drawImage(tmpl, 0, 0, W, H);
+    const statusEl = document.getElementById('status');
+    const btn = document.getElementById('download-btn');
+    
+    try {
+      const tmpl = new Image();
+      
+      // Try multiple paths for the template
+      const paths = ['./certificate-template.jpg', 'certificate-template.jpg', '../certificate-template.jpg'];
+      let loaded = false;
+      
+      for (const path of paths) {
+        console.log('Trying to load:', path);
+        tmpl.src = path;
+        await new Promise((resolve, reject) => {
+          tmpl.onload = resolve;
+          tmpl.onerror = () => reject(new Error('Failed to load: ' + path));
+          setTimeout(reject, 3000); // 3 second timeout
+        });
+        loaded = true;
+        console.log('Successfully loaded:', path);
+        break;
+      }
+      
+      if (!loaded) throw new Error('Could not load template from any path');
 
-    let baseFontSize = Math.floor(W * 0.052);
-    ctx.font = `700 ${baseFontSize}px "Cinzel", serif`;
-    const maxTextWidth = W * 0.75;
-    while (ctx.measureText(name).width > maxTextWidth && baseFontSize > 24) {
-      baseFontSize -= 4;
+      // Wait for fonts
+      await document.fonts.ready;
+      
+      const W = tmpl.naturalWidth || 1920;
+      const H = tmpl.naturalHeight || 1080;
+      canvas.width = W;
+      canvas.height = H;
+      
+      // Draw template
+      ctx.drawImage(tmpl, 0, 0, W, H);
+
+      // Draw name
+      let baseFontSize = Math.floor(W * 0.052);
       ctx.font = `700 ${baseFontSize}px "Cinzel", serif`;
+      const maxTextWidth = W * 0.75;
+      while (ctx.measureText(name).width > maxTextWidth && baseFontSize > 24) {
+        baseFontSize -= 4;
+        ctx.font = `700 ${baseFontSize}px "Cinzel", serif`;
+      }
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#c9a84c';
+      ctx.fillText(name, W / 2, H * 0.345);
+
+      statusEl.style.display = 'none';
+      btn.style.display = 'block';
+      
+      btn.addEventListener('click', function() {
+        this.href = canvas.toDataURL('image/png');
+        this.download = 'Associate-Researcher-Certificate.png';
+        this.click();
+      });
+    } catch (err) {
+      console.error('Error:', err);
+      statusEl.textContent = 'Error: ' + err.message;
+      statusEl.className = 'error';
+      statusEl.style.display = 'block';
+      
+      // Create fallback certificate
+      canvas.width = 800;
+      canvas.height = 600;
+      ctx.fillStyle = '#0a1628';
+      ctx.fillRect(0, 0, 800, 600);
+      ctx.fillStyle = '#c9a84c';
+      ctx.font = '700 40px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Certificate', 400, 200);
+      ctx.font = '24px sans-serif';
+      ctx.fillStyle = '#e8edf5';
+      ctx.fillText(name, 400, 350);
+      ctx.font = '16px sans-serif';
+      ctx.fillText('Associate Researcher', 400, 420);
+      
+      btn.style.display = 'block';
+      btn.addEventListener('click', function() {
+        this.href = canvas.toDataURL('image/png');
+        this.download = 'Associate-Researcher-Certificate.png';
+        this.click();
+      });
     }
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#c9a84c';
-    ctx.fillText(name, W / 2, H * 0.345);
-
-    document.getElementById('download-btn').addEventListener('click', function() {
-      const canvas = document.getElementById('preview-canvas');
-      this.href = canvas.toDataURL('image/png');
-      this.download = 'Associate-Researcher-Certificate.png';
-      this.click();
-    });
   }
 
   generateCert();
